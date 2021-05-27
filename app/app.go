@@ -16,7 +16,9 @@ type AppBuilder struct {
 }
 
 func (this *App) Builder() AppBuilder {
-	return AppBuilder{}
+	return AppBuilder{
+		EventEngine: event.NewEventEngine(),
+	}
 }
 
 func (this *AppBuilder) Init() {
