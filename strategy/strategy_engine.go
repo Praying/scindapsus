@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
@@ -156,7 +157,9 @@ type PositionData struct {
 }
 
 type StrategyEngine struct {
-	strategies []AbstractStrategy
+	Strategies         []AbstractStrategy
+	SymbolStrategyMap  map[string][]AbstractStrategy
+	OrderIDStrategyMap map[string]AbstractStrategy
 }
 
 var once sync.Once
@@ -170,10 +173,27 @@ func GetInstance() *StrategyEngine {
 }
 
 func NewStrategyEngine() *StrategyEngine {
-	return &StrategyEngine{strategies: make([]AbstractStrategy, 0)}
+	return &StrategyEngine{Strategies: make([]AbstractStrategy, 0)}
 }
 
-func (this *StrategyEngine) Init()               {}
+func (this *StrategyEngine) Init() {
+	this.LoadStrategy()
+	this.LoadStrategySetting()
+	this.LoadStrategyData()
+	log.Info("StrategyEngine init successfully")
+
+}
+
+func (this *StrategyEngine) LoadStrategy() {
+
+}
+
+func (this *StrategyEngine) LoadStrategySetting() {
+
+}
+func (this *StrategyEngine) LoadStrategyData() {
+
+}
 func (this *StrategyEngine) InitAllStrategies()  {}
 func (this *StrategyEngine) StartAllStrategies() {}
 func (this *StrategyEngine) ProcessTickerData(tickerData TickerData) {
