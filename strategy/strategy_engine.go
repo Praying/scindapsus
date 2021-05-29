@@ -165,7 +165,7 @@ type StrategyEngine struct {
 var once sync.Once
 var instance *StrategyEngine
 
-func GetInstance() *StrategyEngine {
+func GetStrategyEngine() *StrategyEngine {
 	once.Do(func() {
 		instance = NewStrategyEngine()
 	})

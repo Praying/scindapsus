@@ -2,8 +2,10 @@ package event
 
 import (
 	evbus "github.com/asaskevich/EventBus"
+	log "github.com/sirupsen/logrus"
 	"scindapsus/strategy"
 	_ "scindapsus/strategy"
+	"sync"
 )
 
 type EventType int32
@@ -15,6 +17,16 @@ const (
 	Event_BAR
 	Event_POSITION
 )
+
+var once sync.Once
+var instance *EventEngine
+
+func GetEventEngine() *EventEngine {
+	once.Do(func() {
+		instance = NewEventEngine()
+	})
+	return instance
+}
 
 const DEFUALT_CHANNEL_SIZE = 100
 
@@ -48,16 +60,16 @@ func NewEventEngine() *EventEngine {
 
 func (eventEngine *EventEngine) Init() {
 	eventEngine.EventBus.Subscribe(Event2String[Event_TICKER], func(tickerData strategy.TickerData) {
-		strategy.GetInstance().ProcessTickerData(tickerData)
+		strategy.GetStrategyEngine().ProcessTickerData(tickerData)
 	})
 	eventEngine.EventBus.Subscribe(Event2String[Event_ORDER], func(orderData strategy.OrderData) {
-		strategy.GetInstance().ProcessOrderData(orderData)
+		strategy.GetStrategyEngine().ProcessOrderData(orderData)
 	})
 	eventEngine.EventBus.Subscribe(Event2String[Event_TRADE], func(tradeData strategy.TradeData) {
-		strategy.GetInstance().ProcessTradeData(tradeData)
+		strategy.GetStrategyEngine().ProcessTradeData(tradeData)
 	})
 	eventEngine.EventBus.Subscribe(Event2String[Event_POSITION], func(positionData strategy.PositionData) {
-		strategy.GetInstance().ProcessPositionData(positionData)
+		strategy.GetStrategyEngine().ProcessPositionData(positionData)
 	})
 	go func(eventEngine *EventEngine) {
 		for {
@@ -73,4 +85,5 @@ func (eventEngine *EventEngine) Init() {
 			}
 		}
 	}(eventEngine)
+	log.Info("EventEngine init successfully")
 }

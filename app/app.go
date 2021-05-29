@@ -11,16 +11,13 @@ type App struct {
 }
 
 type AppBuilder struct {
-	EventEngine    *event.EventEngine
-	Exchange       exchanges.Exchange
-	StrategyEngine *strategy.StrategyEngine
-	DoneCh         chan bool
+	Exchange exchanges.Exchange
+	DoneCh   chan bool
 }
 
 func (this *App) Builder() AppBuilder {
 	return AppBuilder{
-		EventEngine: event.NewEventEngine(),
-		DoneCh:      make(chan bool),
+		DoneCh: make(chan bool),
 	}
 }
 
@@ -28,12 +25,8 @@ func (this *AppBuilder) Init() {
 	if this.Exchange != nil {
 		this.Exchange.Init()
 	}
-	if this.EventEngine != nil {
-		this.EventEngine.Init()
-	}
-	if this.StrategyEngine != nil {
-		this.StrategyEngine.Init()
-	}
+	event.GetEventEngine().Init()
+	strategy.GetStrategyEngine().Init()
 }
 
 func (this *AppBuilder) Run() {
