@@ -25,6 +25,30 @@ const (
 )
 
 type TickerData struct {
+	Symbol        string    //货币符号
+	TimeStamp     int64     //时间戳
+	DateTime      time.Time //ISO8601
+	High          float64   //	24小时最高价
+	Low           float64   //24小时最低价
+	Open          float64   //24小时开盘价
+	Last          float64
+	LastVolume    float64
+	Close         float64
+	PreviousClose float64
+	Bid           float64 //买一价
+	BidVolume     float64 //买一价的挂单数量
+	Ask           float64 //卖一价
+	AskVolume     float64 //卖一价的挂单数量
+	BaseVolume    float64
+	QuoteVolume   float64
+	Percentage    float64
+	Average       float64
+	Change        float64
+	VWap          float64
+}
+
+//deprecated
+type TickerData2 struct {
 	STSymbol string
 	Symbol   string //货币符号
 	Exchange string //交易所名称

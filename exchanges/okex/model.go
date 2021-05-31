@@ -18,7 +18,7 @@ type TickerResp struct {
 		Open24H   string `json:"open24h"`
 		High24H   string `json:"high24h"`
 		Low24H    string `json:"low24h"`
-		Volccy24H string `json:"volCcy24h"`
+		Volccy24H string `json:"volCcy24h"` //Ccy是以币为单位
 		Vol24H    string `json:"vol24h"`
 		Sodutc0   string `json:"sodUtc0"`
 		Sodutc8   string `json:"sodUtc8"`

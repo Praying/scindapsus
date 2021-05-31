@@ -2,7 +2,10 @@ package okex
 
 import (
 	"encoding/json"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net/http"
+	"scindapsus/event"
 	"scindapsus/websocket"
 	"sync"
 	"time"
@@ -12,26 +15,17 @@ type Exchange interface {
 	SendLimitOrder()
 }
 
-/*
-
-type wsResp struct {
-	Event     string `json:"event"`
-	Channel   string `json:"channel"`
-	Table     string `json:"table"`
-	Data      json.RawMessage
-	Success   bool        `json:"success"`
-	ErrorCode interface{} `json:"errorCode"`
+func okexRespHandler(channel string, data json.RawMessage) error {
+	switch channel {
+	case "tickers":
+		tickerData := parseTickerData(data)
+		event.GetEventEngine().TickerChan <- (*tickerData)
+		return nil
+	default:
+		return nil
+	}
 }
 
-type OKExV3Ws struct {
-	base *OKEx
-	*WsBuilder
-	once       *sync.Once
-	WsConn     *WsConn
-	respHandle func(channel string, data json.RawMessage) error
-}
-
-*/
 type OKExWSClient struct {
 	*websocket.WsBuilder
 	config      *APIConfig
@@ -45,8 +39,55 @@ func NewOKExWSClient(url string, respHandler func(channel string, data json.RawM
 		once:        new(sync.Once),
 		respHandler: respHandler,
 	}
-	//okexWSClient.WsBuilder = websocket.NewWsBuilder().WsUrl(url).ReconnectInterval(time.Second).AutoReconnect().
-	//	Heartbeat(func() []byte { return []byte("ping") }, 28*time.Second).ProtoHandleFunc(okexWSClient.respHandler)
+	okexWSClient.WsBuilder = websocket.NewWsBuilder().WsUrl(url).ReconnectInterval(time.Second).AutoReconnect().
+		Heartbeat(func() []byte { return []byte("ping") }, 28*time.Second).ProtoHandleFunc(okexWSClient.handle)
+	return okexWSClient
+}
+
+type wsResp struct {
+	Event string `json:"event"`
+	Arg   struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+	} `json:"arg"`
+	Code string `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+func (wsClient *OKExWSClient) handle(msg []byte) error {
+	//TODO
+	log.Debug("[ws][response]", string(msg))
+	if string(msg) == "pong" {
+		return nil
+	}
+	var wsResp wsResp
+	err := json.Unmarshal(msg, &wsResp)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	if wsResp.Event != "" {
+		switch wsResp.Event {
+		case "subscribe":
+			log.Info("subscribed:", wsResp.Arg.Channel)
+			return nil
+		case "unsubscribe":
+			log.Info("unsubscribed:", wsResp.Arg.Channel)
+			return nil
+		case "error":
+			log.Errorf(string(msg))
+		default:
+			log.Info(string(msg))
+		}
+		return fmt.Errorf("unknown websocket message: %v", wsResp)
+	}
+
+	if wsResp.Arg.Channel != "" {
+		return wsClient.respHandler(wsResp.Arg.Channel, msg)
+	}
+
+	return nil
 }
 
 /*
