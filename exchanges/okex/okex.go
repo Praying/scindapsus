@@ -54,6 +54,17 @@ type wsResp struct {
 	Msg  string `json:"msg"`
 }
 
+func (wsClient *OKExWSClient) Subscribe(sub map[string]interface{}) error {
+	wsClient.ConnectWS()
+	return wsClient.WSConn.Subscribe(sub)
+}
+
+func (wsClient *OKExWSClient) ConnectWS() {
+	wsClient.once.Do(func() {
+		wsClient.WSConn = wsClient.WsBuilder.Build()
+	})
+}
+
 func (wsClient *OKExWSClient) handle(msg []byte) error {
 	//TODO
 	log.Debug("[ws][response]", string(msg))

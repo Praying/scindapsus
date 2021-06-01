@@ -221,21 +221,21 @@ func (this *StrategyEngine) LoadStrategyData() {
 func (this *StrategyEngine) InitAllStrategies()  {}
 func (this *StrategyEngine) StartAllStrategies() {}
 func (this *StrategyEngine) ProcessTickerData(tickerData TickerData) {
-	println("process ticker data")
+	log.Info("process ticker data")
 }
 
 func (this *StrategyEngine) ProcessBarData(barData BarData) {
-	println("process bar data")
+	log.Info("process bar data")
 }
 
 func (this *StrategyEngine) ProcessOrderData(orderData OrderData) {
-	println("process order data")
+	log.Info("process order data")
 }
 
 func (this *StrategyEngine) ProcessTradeData(tradeData TradeData) {
-	println("process trade data")
+	log.Info("process trade data")
 }
 
 func (this *StrategyEngine) ProcessPositionData(positionData PositionData) {
-	println("process postion data")
+	log.Info("process postion data")
 }

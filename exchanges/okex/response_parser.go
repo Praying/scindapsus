@@ -20,9 +20,9 @@ func stringToInt64(input string) int64 {
 //根据交易所返回的Ticker数据返回统一的TickerData格式
 func parseTickerData(data []byte) *strategy.TickerData {
 	var tickerResp TickerResp
-	err := json.Unmarshal(data, tickerResp)
+	err := json.Unmarshal(data, &tickerResp)
 	if err != nil {
-		log.Errorf("Unmarshal data:%s to TickerResp failed", string(data))
+		log.Errorf("error:%s \nUnmarshal data:%s to TickerResp failed", err.Error(), string(data))
 		return nil
 	}
 	tickerData := &strategy.TickerData{
