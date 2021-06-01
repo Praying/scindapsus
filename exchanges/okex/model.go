@@ -25,3 +25,26 @@ type TickerResp struct {
 		Ts        string `json:"ts"`
 	} `json:"data"`
 }
+
+//深度数据
+type BookResp struct {
+	Arg struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	} `json:"arg"`
+	Action string `json:"action"`
+	Data   []struct {
+		Asks     [][]string `json:"asks"`
+		Bids     [][]string `json:"bids"`
+		Ts       string     `json:"ts"`
+		Checksum int        `json:"checksum"`
+	} `json:"data"`
+}
+
+type SubParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	} `json:"args"`
+}

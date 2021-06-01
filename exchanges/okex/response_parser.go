@@ -9,11 +9,19 @@ import (
 )
 
 func stringTof64(input string) float64 {
-	res, _ := strconv.ParseFloat(input, 64)
+	res, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		log.Errorf("parse %s to float64 got error:%s", input, err.Error())
+		return 0.0
+	}
 	return res
 }
 func stringToInt64(input string) int64 {
-	res, _ := strconv.ParseInt(input, 10, 64)
+	res, err := strconv.ParseInt(input, 10, 64)
+	if err != nil {
+		log.Errorf("parse %s to int64 got error:%s", input, err.Error())
+		return 0
+	}
 	return res
 }
 
@@ -48,4 +56,15 @@ func parseTickerData(data []byte) *strategy.TickerData {
 		VWap:          0,
 	}
 	return tickerData
+}
+
+func parseBookData(data []byte) *strategy.BookData {
+	var bookResp BookResp
+	if err := json.Unmarshal(data, &bookResp); err != nil {
+		log.Errorf("error:%s \nUnmarshal data:%s to BookResp failed", err.Error(), string(data))
+		return nil
+	}
+	//TODO
+	bookData := &strategy.BookData{}
+	return bookData
 }

@@ -1,7 +1,6 @@
 package okex
 
 import (
-	"encoding/json"
 	"scindapsus/event"
 	"testing"
 	"time"
@@ -11,17 +10,35 @@ const PUBLIC_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/p
 
 const PRIVATE_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/private"
 
-func TestSubscribeTickerData(t *testing.T) {
+func TestSubscribeTicker(t *testing.T) {
 	event.GetEventEngine().Init()
 	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, okexRespHandler)
-	subParam := json.RawMessage(`{ 
-    "op": "subscribe",
-    "args": [{
-        "channel": "tickers",
-        "instId": "BTC-USDT"
-    }]}`)
-	//okexWSPublic.Subscribe()
 	okexWSPublic.ConnectWS()
-	okexWSPublic.WSConn.SendMessage(subParam)
-	time.Sleep(time.Second * 10)
+	okexWSPublic.SubscribeTicker([]string{"BTC-USDT", "ETH-USDT"})
+	time.Sleep(time.Second * 5)
+	okexWSPublic.UnSubscribeTicker([]string{"BTC-USDT"})
+	time.Sleep(time.Second * 5)
+}
+
+func TestSubscribeDepth(t *testing.T) {
+	event.GetEventEngine().Init()
+	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, okexRespHandler)
+	okexWSPublic.ConnectWS()
+	okexWSPublic.SubscribeDepth([]string{"BTC-USDT", "ETH-USDT"})
+	time.Sleep(time.Second * 5)
+	okexWSPublic.UnSubscribeDepth([]string{"BTC-USDT"})
+	time.Sleep(time.Second * 5)
+}
+
+func TestReflect(t *testing.T) {
+	var s SubParam
+	s.Args = append(s.Args, struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	}{"tickers", "BTC-USDT"})
+	s.Args = append(s.Args, struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	}{"tickers", "ETH-USDT"})
+
 }

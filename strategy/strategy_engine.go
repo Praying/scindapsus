@@ -47,6 +47,37 @@ type TickerData struct {
 	VWap          float64
 }
 
+type BookData struct {
+	Symbol    string
+	TimeStamp int64
+	Action    string
+	//买一
+	BidPrice1 float64
+	BidPrice2 float64
+	BidPrice3 float64
+	BidPrice4 float64
+	BidPrice5 float64
+
+	//卖一
+	AskPrice1 float64
+	AskPrice2 float64
+	AskPrice3 float64
+	AskPrice4 float64
+	AskPrice5 float64
+
+	BidVolume1 float64
+	BidVolume2 float64
+	BidVolume3 float64
+	BidVolume4 float64
+	BidVolume5 float64
+
+	AskVolume1 float64
+	AskVolume2 float64
+	AskVolume3 float64
+	AskVolume4 float64
+	AskVolume5 float64
+}
+
 //deprecated
 type TickerData2 struct {
 	STSymbol string
@@ -221,7 +252,7 @@ func (this *StrategyEngine) LoadStrategyData() {
 func (this *StrategyEngine) InitAllStrategies()  {}
 func (this *StrategyEngine) StartAllStrategies() {}
 func (this *StrategyEngine) ProcessTickerData(tickerData TickerData) {
-	log.Info("process ticker data")
+	log.Infof("process ticker data:%s", tickerData.Symbol)
 }
 
 func (this *StrategyEngine) ProcessBarData(barData BarData) {
@@ -238,4 +269,8 @@ func (this *StrategyEngine) ProcessTradeData(tradeData TradeData) {
 
 func (this *StrategyEngine) ProcessPositionData(positionData PositionData) {
 	log.Info("process postion data")
+}
+
+func (this *StrategyEngine) ProcessBookData(bookData BookData) {
+	log.Info("process book data: %v", bookData)
 }

@@ -11,11 +11,14 @@ import (
 type EventType int32
 
 const (
+	//行情
 	Event_TICKER EventType = iota
 	Event_ORDER
 	Event_TRADE
 	Event_BAR
 	Event_POSITION
+	//深度
+	Event_BOOK
 )
 
 var once sync.Once
@@ -39,6 +42,7 @@ func init() {
 	Event2String[Event_TRADE] = "event_trade"
 	Event2String[Event_BAR] = "event_bar"
 	Event2String[Event_POSITION] = "event_position"
+	Event2String[Event_BOOK] = "event_book"
 }
 
 type EventEngine struct {
@@ -47,6 +51,7 @@ type EventEngine struct {
 	OrderChan    chan strategy.OrderData
 	TradeChan    chan strategy.TradeData
 	PositionChan chan strategy.PositionData
+	BookChan     chan strategy.BookData
 }
 
 func NewEventEngine() *EventEngine {
@@ -55,6 +60,7 @@ func NewEventEngine() *EventEngine {
 		OrderChan:    make(chan strategy.OrderData, DEFUALT_CHANNEL_SIZE),
 		TradeChan:    make(chan strategy.TradeData, DEFUALT_CHANNEL_SIZE),
 		PositionChan: make(chan strategy.PositionData, DEFUALT_CHANNEL_SIZE),
+		BookChan:     make(chan strategy.BookData, DEFUALT_CHANNEL_SIZE),
 	}
 }
 
@@ -71,6 +77,9 @@ func (eventEngine *EventEngine) Init() {
 	eventEngine.EventBus.Subscribe(Event2String[Event_POSITION], func(positionData strategy.PositionData) {
 		strategy.GetStrategyEngine().ProcessPositionData(positionData)
 	})
+	eventEngine.EventBus.Subscribe(Event2String[Event_BOOK], func(bookData strategy.BookData) {
+		strategy.GetStrategyEngine().ProcessBookData(bookData)
+	})
 	go func(eventEngine *EventEngine) {
 		for {
 			select {
@@ -82,6 +91,8 @@ func (eventEngine *EventEngine) Init() {
 				eventEngine.EventBus.Publish(Event2String[Event_TRADE], tradeData)
 			case positionData := <-eventEngine.PositionChan:
 				eventEngine.EventBus.Publish(Event2String[Event_POSITION], positionData)
+			case bookData := <-eventEngine.BookChan:
+				eventEngine.EventBus.Publish(Event2String[Event_BOOK], bookData)
 			}
 		}
 	}(eventEngine)

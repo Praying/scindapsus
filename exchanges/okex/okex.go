@@ -21,9 +21,17 @@ func okexRespHandler(channel string, data json.RawMessage) error {
 		tickerData := parseTickerData(data)
 		event.GetEventEngine().TickerChan <- (*tickerData)
 		return nil
+	case "books":
+	case "books5":
+	case "books-l2-tbt":
+	case "books50-l2-tbt":
+		bookData := parseBookData(data)
+		event.GetEventEngine().BookChan <- (*bookData)
+		return nil
 	default:
 		return nil
 	}
+	return nil
 }
 
 type OKExWSClient struct {
@@ -63,6 +71,60 @@ func (wsClient *OKExWSClient) ConnectWS() {
 	wsClient.once.Do(func() {
 		wsClient.WSConn = wsClient.WsBuilder.Build()
 	})
+}
+
+//订阅行情Ticker数据
+func (wsClient *OKExWSClient) SubscribeTicker(currencyPairs []string) error {
+	var subParam SubParam
+	subParam.Op = "subscribe"
+	for _, currencyPair := range currencyPairs {
+		subParam.Args = append(subParam.Args, struct {
+			Channel string `json:"channel"`
+			InstID  string `json:"instId"`
+		}{"tickers", currencyPair})
+	}
+	wsClient.WSConn.Subscribe(subParam)
+	return nil
+}
+
+func (wsClient *OKExWSClient) UnSubscribeTicker(currencyPairs []string) error {
+	var subParam SubParam
+	subParam.Op = "unsubscribe"
+	for _, currencyPair := range currencyPairs {
+		subParam.Args = append(subParam.Args, struct {
+			Channel string `json:"channel"`
+			InstID  string `json:"instId"`
+		}{"tickers", currencyPair})
+	}
+	wsClient.WSConn.Subscribe(subParam)
+	return nil
+}
+
+//订阅深度数据
+func (wsClient *OKExWSClient) SubscribeDepth(currencyPairs []string) error {
+	var subParam SubParam
+	subParam.Op = "subscribe"
+	for _, currencyPair := range currencyPairs {
+		subParam.Args = append(subParam.Args, struct {
+			Channel string `json:"channel"`
+			InstID  string `json:"instId"`
+		}{"books", currencyPair})
+	}
+	wsClient.WSConn.Subscribe(subParam)
+	return nil
+}
+
+func (wsClient *OKExWSClient) UnSubscribeDepth(currencyPairs []string) error {
+	var subParam SubParam
+	subParam.Op = "unsubscribe"
+	for _, currencyPair := range currencyPairs {
+		subParam.Args = append(subParam.Args, struct {
+			Channel string `json:"channel"`
+			InstID  string `json:"instId"`
+		}{"books", currencyPair})
+	}
+	wsClient.WSConn.Subscribe(subParam)
+	return nil
 }
 
 func (wsClient *OKExWSClient) handle(msg []byte) error {
