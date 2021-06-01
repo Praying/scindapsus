@@ -22,8 +22,11 @@ func okexRespHandler(channel string, data json.RawMessage) error {
 		event.GetEventEngine().TickerChan <- (*tickerData)
 		return nil
 	case "books":
+		fallthrough
 	case "books5":
+		fallthrough
 	case "books-l2-tbt":
+		fallthrough
 	case "books50-l2-tbt":
 		bookData := parseBookData(data)
 		event.GetEventEngine().BookChan <- (*bookData)
