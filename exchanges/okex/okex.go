@@ -1,12 +1,16 @@
 package okex
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"scindapsus/event"
 	"scindapsus/websocket"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -76,6 +80,34 @@ func (wsClient *OKExWSClient) ConnectWS() {
 	})
 }
 
+func genSign(secretKey string, timestamp string) string {
+	msg := timestamp + "GET" + "/users/self/verify"
+	mac := hmac.New(sha256.New, []byte(secretKey))
+	mac.Write([]byte(msg))
+	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
+}
+
+//登录
+func (wsClient *OKExWSClient) Login(config *APIConfig) error {
+	var loginParam LoginParam
+	loginParam.Op = "login"
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	loginParam.Args = append(loginParam.Args, struct {
+		APIKey     string `json:"apiKey"`
+		Passphrase string `json:"passphrase"`
+		Timestamp  string `json:"timestamp"`
+		Sign       string `json:"sign"`
+	}{APIKey: config.ApiKey, Passphrase: config.ApiPassphrase, Timestamp: timestamp, Sign: genSign(config.ApiSecretKey, timestamp)})
+	data, err := json.Marshal(loginParam)
+	if err != nil {
+		log.Errorf("[ws][%s] json encode error , %s", wsClient.WSConn.WsUrl, err)
+		return err
+	}
+	log.Debug(string(data))
+	wsClient.WSConn.SendMessage(data)
+	return nil
+}
+
 //订阅行情Ticker数据
 func (wsClient *OKExWSClient) SubscribeTicker(currencyPairs []string) error {
 	var subParam SubParam
@@ -100,6 +132,21 @@ func (wsClient *OKExWSClient) UnSubscribeTicker(currencyPairs []string) error {
 		}{"tickers", currencyPair})
 	}
 	wsClient.WSConn.Subscribe(subParam)
+	return nil
+}
+
+//订阅持仓
+func (wsClient *OKExWSClient) SubscribePosition(instType string, instID string) error {
+	//TODO
+	var positionParam PositionParam
+	positionParam.Op = "subscribe"
+	positionParam.Args = append(positionParam.Args, struct {
+		Channel  string `json:"channel"`  //必填
+		InstType string `json:"instType"` //必填
+		Uly      string `json:"uly"`
+		InstID   string `json:"instId"`
+	}{Channel: "positions", InstType: instType, Uly: "", InstID: instID})
+	wsClient.WSConn.Subscribe(positionParam)
 	return nil
 }
 
@@ -151,6 +198,8 @@ func (wsClient *OKExWSClient) handle(msg []byte) error {
 		case "unsubscribe":
 			log.Info("unsubscribed:", wsResp.Arg.Channel)
 			return nil
+		case "login":
+			log.Info("login:", string(msg))
 		case "error":
 			log.Errorf(string(msg))
 		default:

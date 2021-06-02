@@ -64,7 +64,29 @@ func parseBookData(data []byte) *strategy.BookData {
 		log.Errorf("error:%s \nUnmarshal data:%s to BookResp failed", err.Error(), string(data))
 		return nil
 	}
-	//TODO
-	bookData := &strategy.BookData{}
+
+	bookData := &strategy.BookData{
+		Symbol:  bookResp.Arg.InstID,
+		Action:  bookResp.Action,
+		AskList: make([]strategy.BookRecord, 0),
+		BidList: make([]strategy.BookRecord, 0),
+	}
+	if len(bookResp.Data) == 1 {
+		for _, ask := range bookResp.Data[0].Asks {
+			bookRecord := strategy.BookRecord{
+				Price:  stringTof64(ask[0]),
+				Volume: stringTof64(ask[1]),
+			}
+			bookData.AskList = append(bookData.AskList, bookRecord)
+		}
+		for _, bid := range bookResp.Data[0].Bids {
+			bookRecord := strategy.BookRecord{
+				Price:  stringTof64(bid[0]),
+				Volume: stringTof64(bid[1]),
+			}
+			bookData.BidList = append(bookData.BidList, bookRecord)
+		}
+	}
+
 	return bookData
 }

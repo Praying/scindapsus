@@ -48,3 +48,25 @@ type SubParam struct {
 		InstID  string `json:"instId"`
 	} `json:"args"`
 }
+
+//私有频道，登录
+type LoginParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		APIKey     string `json:"apiKey"`
+		Passphrase string `json:"passphrase"`
+		Timestamp  string `json:"timestamp"`
+		Sign       string `json:"sign"`
+	} `json:"args"`
+}
+
+//私有频道，订阅持仓 参数
+type PositionParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel  string `json:"channel"`  //必填
+		InstType string `json:"instType"` //必填
+		Uly      string `json:"uly"`      //	合约标的指数
+		InstID   string `json:"instId"`   //产品ID
+	} `json:"args"`
+}

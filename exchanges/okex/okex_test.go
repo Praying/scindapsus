@@ -1,6 +1,7 @@
 package okex
 
 import (
+	"github.com/stretchr/testify/assert"
 	"scindapsus/event"
 	"testing"
 	"time"
@@ -41,4 +42,29 @@ func TestReflect(t *testing.T) {
 		InstID  string `json:"instId"`
 	}{"tickers", "ETH-USDT"})
 
+}
+
+func TestGenSign(t *testing.T) {
+	sign := genSign("0C4D537A249467C8102EAE10E6118ED6", "1538054050")
+	assert.Equal(t, "fzrMT2u+wBZ1oq++co4MuDTvjmKNWcL7PClJg0y2Qj4=", sign)
+}
+
+func TestPrivateWS(t *testing.T) {
+	apiConfig := &APIConfig{
+		HttpClient:    nil,
+		Endpoint:      "",
+		ApiKey:        "",
+		ApiSecretKey:  "",
+		ApiPassphrase: "",
+		ClientId:      "",
+		Lever:         0,
+	}
+	privateWS := NewOKExWSClient(PRIVATE_WEBSOCKET_HOST_CHINA, okexRespHandler)
+	privateWS.ConnectWS()
+	//登录
+	privateWS.Login(apiConfig)
+	time.Sleep(5 * time.Second)
+	//订阅持仓信息
+	privateWS.SubscribePosition("MARGIN", "SHIB-USDT")
+	time.Sleep(5 * time.Second)
 }
