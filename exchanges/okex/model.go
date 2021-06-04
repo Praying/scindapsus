@@ -70,3 +70,48 @@ type PositionParam struct {
 		InstID   string `json:"instId"`   //产品ID
 	} `json:"args"`
 }
+
+type PositionResp struct {
+	Arg struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+	} `json:"arg"`
+	Data []struct {
+		Adl      string `json:"adl"`
+		AvailPos string `json:"availPos"`
+		AvgPx    string `json:"avgPx"`
+		CTime    string `json:"cTime"`
+		Ccy      string `json:"ccy"`
+		DeltaBS  string `json:"deltaBS"`
+		DeltaPA  string `json:"deltaPA"`
+		GammaBS  string `json:"gammaBS"`
+		GammaPA  string `json:"gammaPA"`
+		Imr      string `json:"imr"`
+		InstID   string `json:"instId"`
+		InstType string `json:"instType"`
+		Interest string `json:"interest"`
+		Last     string `json:"last"`
+		Lever    string `json:"lever"`
+		Liab     string `json:"liab"`
+		LiabCcy  string `json:"liabCcy"`
+		LiqPx    string `json:"liqPx"`
+		Margin   string `json:"margin"`
+		MgnMode  string `json:"mgnMode"`
+		MgnRatio string `json:"mgnRatio"`
+		Mmr      string `json:"mmr"`
+		OptVal   string `json:"optVal"`
+		PTime    string `json:"pTime"`
+		Pos      string `json:"pos"`
+		PosCcy   string `json:"posCcy"`
+		PosID    string `json:"posId"`
+		PosSide  string `json:"posSide"`
+		ThetaBS  string `json:"thetaBS"`
+		ThetaPA  string `json:"thetaPA"`
+		TradeID  string `json:"tradeId"`
+		UTime    string `json:"uTime"`
+		Upl      string `json:"upl"`
+		UplRatio string `json:"uplRatio"`
+		VegaBS   string `json:"vegaBS"`
+		VegaPA   string `json:"vegaPA"`
+	} `json:"data"`
+}

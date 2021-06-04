@@ -35,6 +35,14 @@ func okexRespHandler(channel string, data json.RawMessage) error {
 		bookData := parseBookData(data)
 		event.GetEventEngine().BookChan <- (*bookData)
 		return nil
+	case "position":
+		positionData := parsePositionData(data)
+		event.GetEventEngine().PositionChan <- (*positionData)
+		return nil
+	case "orders":
+		orderData := parseOrderData(data)
+		event.GetEventEngine().OrderChan <- (*orderData)
+		return nil
 	default:
 		return nil
 	}

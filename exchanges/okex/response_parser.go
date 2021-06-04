@@ -90,3 +90,18 @@ func parseBookData(data []byte) *strategy.BookData {
 
 	return bookData
 }
+
+func parsePositionData(data []byte) *strategy.PositionData {
+	var positionResp PositionResp
+	if err := json.Unmarshal(data, &positionResp); err != nil {
+		log.Errorf("error:%s \nUnmarshal data:%s to PositionResp failed", err.Error(), string(data))
+		return nil
+	}
+	positionData := &strategy.PositionData{}
+	return positionData
+}
+
+func parseOrderData(data []byte) *strategy.OrderData {
+	orderData := &strategy.OrderData{}
+	return orderData
+}

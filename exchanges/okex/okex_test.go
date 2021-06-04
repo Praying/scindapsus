@@ -53,9 +53,9 @@ func TestPrivateWS(t *testing.T) {
 	apiConfig := &APIConfig{
 		HttpClient:    nil,
 		Endpoint:      "",
-		ApiKey:        "",
-		ApiSecretKey:  "",
-		ApiPassphrase: "",
+		ApiKey:        "6b7c638e-0486-40d0-9228-db4d53f585f6",
+		ApiSecretKey:  "B22D93123C8096E203D8A47252E277C8",
+		ApiPassphrase: "cyjqr1314",
 		ClientId:      "",
 		Lever:         0,
 	}
