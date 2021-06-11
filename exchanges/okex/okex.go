@@ -15,8 +15,32 @@ import (
 	"time"
 )
 
+/*
+const REST_HOST_CHINA: &str = "https://www.okex.win";
+const PUBLIC_WEBSOCKET_HOST_CHINA: &str = "wss://wspri.coinall.ltd:8443/ws/v5/public";
+const PRIVATE_WEBSOCKET_HOST_CHINA: &str = "wss://wspri.coinall.ltd:8443/ws/v5/private";
+
+const REST_HOST: &str = "https://www.okex.com";
+const PUBLIC_WEBSOCKET_HOST: &str = "wss://ws.okex.com:8443/ws/v5/public";
+const PRIVATE_WEBSOCKET_HOST: &str = "wss://ws.okex.com:8443/ws/v5/private";
+
+const TEST_PUBLIC_WEBSOCKET_HOST: &str = "wss://wspri.coinall.ltd:8443/ws/v5/public?brokerId=9999";
+const TEST_PRIVATE_WEBSOCKET_HOST: &str =
+    "wss://wspri.coinall.ltd:8443/ws/v5/private?brokerId=9999";
+*/
+
+const REST_HOST_CHINA string = "https://www.ouyi.cc"
+const PUBLIC_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/public"
+const PRIVATE_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/private"
+const REST_HOST string = "https://www.okex.com"
+const PUBLIC_WEBSOCKET_HOST string = "wss://ws.okex.com:8443/ws/v5/public"
+const PRIVATE_WEBSOCKET_HOST string = "wss://ws.okex.com:8443/ws/v5/private"
+
+const TEST_PUBLIC_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/public?brokerId=9999"
+const TEST_PRIVATE_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/private?brokerId=9999"
+
 type Exchange interface {
-	SendLimitOrder()
+	CreateOrder()
 }
 
 func okexRespHandler(channel string, data json.RawMessage) error {
@@ -80,6 +104,46 @@ type wsResp struct {
 func (wsClient *OKExWSClient) Subscribe(sub map[string]interface{}) error {
 	wsClient.ConnectWS()
 	return wsClient.WSConn.Subscribe(sub)
+}
+
+func generateOrderID(symbol string, orderType string) string {
+	return fmt.Sprintf("%s-%s-%d", symbol, orderType, time.Now().Nanosecond())
+}
+func (wsClient *OKExWSClient) CreateOrder(symbol, orderType, side string, amount, price float64) error {
+	//Symbol-时间戳-OrderType
+	//orderId := generateOrderID(symbol, orderType)
+	orderId := fmt.Sprintf("%d", 1)
+	orderParam := &OrderParam{
+		ID:   orderId,
+		Op:   "order",
+		Args: nil,
+	}
+
+	orderParam.Args = append(orderParam.Args, struct {
+		Side   string `json:"side"`
+		InstID string `json:"instId"`
+		/*
+			交易模式
+			保证金模式 isolated：逐仓 cross： 全仓
+			非保证金模式 cash：现金
+		*/
+		TdMode  string `json:"tdMode"`
+		OrdType string `json:"ordType"`
+		/*
+			当type为limit时，表示买入或卖出的数量
+			当type为market时，现货交易买入时，表示买入的总金额，而
+			当其他产品买入或卖出时，表示数量
+		*/
+		Sz string `json:"sz"`
+	}{Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount)})
+	data, err := json.Marshal(orderParam)
+	if err != nil {
+		log.Errorf("[ws][%s] json encode orderParam error , %s", wsClient.WSConn.WsUrl, err)
+		return err
+	}
+	log.Info(string(data))
+	wsClient.WSConn.SendMessage(data)
+	return nil
 }
 
 func (wsClient *OKExWSClient) ConnectWS() {

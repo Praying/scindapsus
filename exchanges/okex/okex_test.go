@@ -1,15 +1,12 @@
 package okex
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"scindapsus/event"
 	"testing"
 	"time"
 )
-
-const PUBLIC_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/public"
-
-const PRIVATE_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/private"
 
 func TestSubscribeTicker(t *testing.T) {
 	event.GetEventEngine().Init()
@@ -53,9 +50,9 @@ func TestPrivateWS(t *testing.T) {
 	apiConfig := &APIConfig{
 		HttpClient:    nil,
 		Endpoint:      "",
-		ApiKey:        "6b7c638e-0486-40d0-9228-db4d53f585f6",
-		ApiSecretKey:  "B22D93123C8096E203D8A47252E277C8",
-		ApiPassphrase: "cyjqr1314",
+		ApiKey:        "",
+		ApiSecretKey:  "",
+		ApiPassphrase: "",
 		ClientId:      "",
 		Lever:         0,
 	}
@@ -66,5 +63,27 @@ func TestPrivateWS(t *testing.T) {
 	time.Sleep(5 * time.Second)
 	//订阅持仓信息
 	privateWS.SubscribePosition("MARGIN", "SHIB-USDT")
+	time.Sleep(5 * time.Second)
+}
+
+func TestSendLimitOrder(t *testing.T) {
+	apiConfig := &APIConfig{
+		HttpClient:    nil,
+		Endpoint:      "",
+		ApiKey:        "",
+		ApiSecretKey:  "",
+		ApiPassphrase: "",
+		ClientId:      "",
+		Lever:         0,
+	}
+	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, okexRespHandler)
+	privateWS.ConnectWS()
+	//登录
+	privateWS.Login(apiConfig)
+	time.Sleep(5 * time.Second)
+	//下单
+	if err := privateWS.CreateOrder("ETH-USDT", "limit", "buy", 2, 2400); err != nil {
+		log.Errorln(err.Error())
+	}
 	time.Sleep(5 * time.Second)
 }

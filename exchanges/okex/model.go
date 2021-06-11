@@ -115,3 +115,16 @@ type PositionResp struct {
 		VegaPA   string `json:"vegaPA"`
 	} `json:"data"`
 }
+
+//下单的订单请求
+type OrderParam struct {
+	ID   string `json:"id"`
+	Op   string `json:"op"`
+	Args []struct {
+		Side    string `json:"side"`
+		InstID  string `json:"instId"`
+		TdMode  string `json:"tdMode"`
+		OrdType string `json:"ordType"`
+		Sz      string `json:"sz"`
+	} `json:"args"`
+}
