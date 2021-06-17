@@ -128,3 +128,32 @@ type OrderParam struct {
 		Sz      string `json:"sz"`
 	} `json:"args"`
 }
+
+//余额和持仓
+type BalAndPosResp struct {
+	Arg struct {
+		Channel string `json:"channel"`
+	} `json:"arg"`
+	Data []struct {
+		PTime     string `json:"pTime"`
+		EventType string `json:"eventType"`
+		BalData   []struct {
+			Ccy     string `json:"ccy"`
+			CashBal string `json:"cashBal"`
+			UTime   string `json:"uTime"`
+		} `json:"balData"`
+		PosData []struct {
+			PosID    string `json:"posId"`
+			TradeID  string `json:"tradeId"`
+			InstID   string `json:"instId"`
+			InstType string `json:"instType"`
+			MgnMode  string `json:"mgnMode"`
+			PosSide  string `json:"posSide"`
+			Pos      string `json:"pos"`
+			Ccy      string `json:"ccy"`
+			PosCcy   string `json:"posCcy"`
+			AvgPx    string `json:"avgPx"`
+			UTime    string `json:"uTime"`
+		} `json:"posData"`
+	} `json:"data"`
+}

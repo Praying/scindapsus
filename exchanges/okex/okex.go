@@ -67,6 +67,11 @@ func okexRespHandler(channel string, data json.RawMessage) error {
 		orderData := parseOrderData(data)
 		event.GetEventEngine().OrderChan <- (*orderData)
 		return nil
+	case "balance_and_position":
+		log.Info(data)
+		parseBalAndPosData(data)
+		//event.GetEventEngine().BalAndPosChan
+		return nil
 	default:
 		return nil
 	}
@@ -236,6 +241,17 @@ func (wsClient *OKExWSClient) SubscribeDepth(currencyPairs []string) error {
 	return nil
 }
 
+func (wsClient *OKExWSClient) SubscribeBalAndPos() error {
+	param := `{
+    "op": "subscribe",
+    "args": [{
+        "channel": "balance_and_position"
+    }]
+	}`
+	wsClient.WSConn.SendMessage([]byte(param))
+	return nil
+}
+
 func (wsClient *OKExWSClient) UnSubscribeDepth(currencyPairs []string) error {
 	var subParam SubParam
 	subParam.Op = "unsubscribe"
@@ -286,6 +302,10 @@ func (wsClient *OKExWSClient) handle(msg []byte) error {
 
 	return nil
 }
+
+//func (wsClient *OKExWSClient) SubscribePosition(s string, s2 string, s3 string, i int, i2 int) interface{} {
+//
+//}
 
 /*
 func NewOKExV3Ws(base *OKEx, handle func(channel string, data json.RawMessage) error) *OKExV3Ws {

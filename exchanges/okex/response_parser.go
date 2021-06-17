@@ -105,3 +105,13 @@ func parseOrderData(data []byte) *strategy.OrderData {
 	orderData := &strategy.OrderData{}
 	return orderData
 }
+
+func parseBalAndPosData(data []byte) interface{} {
+	var balAndPosResp BalAndPosResp
+	if err := json.Unmarshal(data, &balAndPosResp); err != nil {
+		log.Errorf("error: %s, Unmarshal data: %s to BalAndPostionResp", err.Error(), data)
+		return nil
+	}
+	log.Infof("%v", balAndPosResp)
+	return nil
+}
