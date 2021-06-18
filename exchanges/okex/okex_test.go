@@ -8,6 +8,20 @@ import (
 	"time"
 )
 
+var apiConfig *APIConfig
+
+func init() {
+	apiConfig = &APIConfig{
+		HttpClient:    nil,
+		Endpoint:      "",
+		ApiKey:        "",
+		ApiSecretKey:  "",
+		ApiPassphrase: "",
+		ClientId:      "",
+		Lever:         0,
+	}
+}
+
 func TestSubscribeTicker(t *testing.T) {
 	event.GetEventEngine().Init()
 	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, okexRespHandler)
@@ -47,15 +61,7 @@ func TestGenSign(t *testing.T) {
 }
 
 func TestPrivateWS(t *testing.T) {
-	apiConfig := &APIConfig{
-		HttpClient:    nil,
-		Endpoint:      "",
-		ApiKey:        "",
-		ApiSecretKey:  "",
-		ApiPassphrase: "",
-		ClientId:      "",
-		Lever:         0,
-	}
+
 	privateWS := NewOKExWSClient(PRIVATE_WEBSOCKET_HOST_CHINA, okexRespHandler)
 	privateWS.ConnectWS()
 	//登录
@@ -67,22 +73,30 @@ func TestPrivateWS(t *testing.T) {
 }
 
 func TestSendLimitOrder(t *testing.T) {
-	apiConfig := &APIConfig{
-		HttpClient:    nil,
-		Endpoint:      "",
-		ApiKey:        "",
-		ApiSecretKey:  "",
-		ApiPassphrase: "",
-		ClientId:      "",
-		Lever:         0,
-	}
+
 	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, okexRespHandler)
 	privateWS.ConnectWS()
 	//登录
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
+	//订阅订单信息
+
 	//下单
-	if err := privateWS.CreateOrder("ETH-USDT", "limit", "buy", 2, 2400); err != nil {
+	if err := privateWS.CreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400); err != nil {
+		log.Errorln(err.Error())
+	}
+	time.Sleep(5 * time.Second)
+}
+
+//订阅余额和持仓
+func TestSubscribeBalAndPos(t *testing.T) {
+	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, okexRespHandler)
+	privateWS.ConnectWS()
+	//登录
+	privateWS.Login(apiConfig)
+	time.Sleep(5 * time.Second)
+
+	if err := privateWS.SubscribeBalAndPos(); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(5 * time.Second)

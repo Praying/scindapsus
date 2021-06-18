@@ -11,6 +11,7 @@ import (
 	"scindapsus/event"
 	"scindapsus/websocket"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -125,8 +126,9 @@ func (wsClient *OKExWSClient) CreateOrder(symbol, orderType, side string, amount
 	}
 
 	orderParam.Args = append(orderParam.Args, struct {
-		Side   string `json:"side"`
-		InstID string `json:"instId"`
+		ClOrderID string `json:"clOrdId"`
+		Side      string `json:"side"`
+		InstID    string `json:"instId"`
 		/*
 			交易模式
 			保证金模式 isolated：逐仓 cross： 全仓
@@ -140,7 +142,8 @@ func (wsClient *OKExWSClient) CreateOrder(symbol, orderType, side string, amount
 			当其他产品买入或卖出时，表示数量
 		*/
 		Sz string `json:"sz"`
-	}{Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount)})
+		Px string `json:"px"`
+	}{ClOrderID: "xxsyydflsdfdsuf", Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
 	data, err := json.Marshal(orderParam)
 	if err != nil {
 		log.Errorf("[ws][%s] json encode orderParam error , %s", wsClient.WSConn.WsUrl, err)
@@ -267,37 +270,61 @@ func (wsClient *OKExWSClient) UnSubscribeDepth(currencyPairs []string) error {
 
 func (wsClient *OKExWSClient) handle(msg []byte) error {
 	//TODO
-	log.Debug("[ws][response]", string(msg))
+	log.Info("[ws][response]", string(msg))
 	if string(msg) == "pong" {
 		return nil
-	}
-	var wsResp wsResp
-	err := json.Unmarshal(msg, &wsResp)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
-	if wsResp.Event != "" {
-		switch wsResp.Event {
-		case "subscribe":
-			log.Info("subscribed:", wsResp.Arg.Channel)
-			return nil
-		case "unsubscribe":
-			log.Info("unsubscribed:", wsResp.Arg.Channel)
-			return nil
-		case "login":
-			log.Info("login:", string(msg))
-		case "error":
-			log.Errorf(string(msg))
-		default:
-			log.Info(string(msg))
+	} else if strings.Contains(string(msg), "clOrdId") {
+		//处理下单的状态
+		var orderResp OrderResp
+		err := json.Unmarshal(msg, &orderResp)
+		if err != nil {
+			log.Error(err)
+			return err
 		}
-		return fmt.Errorf("unknown websocket message: %v", wsResp)
-	}
+		if orderResp.Code == "1" {
+			if len(orderResp.Data) > 0 {
+				log.Errorf("clOrdId:%s, ordId:%s,sCode:%s, sMsg:%s", orderResp.Data[0].ClOrdID, orderResp.Data[0].OrdID, orderResp.Data[0].SCode, orderResp.Data[0].SMsg)
+				return fmt.Errorf("clOrdId:%s, ordId:%s,sCode:%s, sMsg:%s", orderResp.Data[0].ClOrdID, orderResp.Data[0].OrdID, orderResp.Data[0].SCode, orderResp.Data[0].SMsg)
+			}
+		} else if orderResp.Code == "0" {
+			log.Infof("order successful: ordId: %s", orderResp.Data[0].OrdID)
+			return nil
+		}
 
-	if wsResp.Arg.Channel != "" {
-		return wsClient.respHandler(wsResp.Arg.Channel, msg)
+	} else if strings.Contains(string(msg), "event") {
+		//处理订阅事件的状态
+		var wsResp wsResp
+		err := json.Unmarshal(msg, &wsResp)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		if wsResp.Event != "" {
+			switch wsResp.Event {
+			case "subscribe":
+				log.Info("subscribed:", wsResp.Arg.Channel)
+				return nil
+			case "unsubscribe":
+				log.Info("unsubscribed:", wsResp.Arg.Channel)
+				return nil
+			case "login":
+				log.Info("login:", string(msg))
+			case "error":
+				log.Errorf(string(msg))
+			default:
+				log.Info(string(msg))
+			}
+			return fmt.Errorf("unknown websocket message: %v", wsResp)
+		}
+		if wsResp.Code != "0" {
+			log.Errorf("error")
+		}
+
+		if wsResp.Arg.Channel != "" {
+			return wsClient.respHandler(wsResp.Arg.Channel, msg)
+		}
+
 	}
 
 	return nil

@@ -121,11 +121,13 @@ type OrderParam struct {
 	ID   string `json:"id"`
 	Op   string `json:"op"`
 	Args []struct {
-		Side    string `json:"side"`
-		InstID  string `json:"instId"`
-		TdMode  string `json:"tdMode"`
-		OrdType string `json:"ordType"`
-		Sz      string `json:"sz"`
+		ClOrderID string `json:"clOrdId"`
+		Side      string `json:"side"`
+		InstID    string `json:"instId"`
+		TdMode    string `json:"tdMode"`
+		OrdType   string `json:"ordType"`
+		Sz        string `json:"sz"` //限价单时，表示数量
+		Px        string `json:"px"` //限价单，表示委托价格
 	} `json:"args"`
 }
 
@@ -156,4 +158,19 @@ type BalAndPosResp struct {
 			UTime    string `json:"uTime"`
 		} `json:"posData"`
 	} `json:"data"`
+}
+
+//WS下单操作的响应
+type OrderResp struct {
+	Code string `json:"code"`
+	Data []struct {
+		ClOrdID string `json:"clOrdId"`
+		OrdID   string `json:"ordId"`
+		SCode   string `json:"sCode"`
+		SMsg    string `json:"sMsg"`
+		Tag     string `json:"tag"`
+	} `json:"data"`
+	ID  string `json:"id"`
+	Msg string `json:"msg"`
+	Op  string `json:"op"`
 }
