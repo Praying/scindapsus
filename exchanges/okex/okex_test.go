@@ -24,7 +24,7 @@ func init() {
 
 func TestSubscribeTicker(t *testing.T) {
 	event.GetEventEngine().Init()
-	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, okexRespHandler)
+	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, OkexRespHandler)
 	okexWSPublic.ConnectWS()
 	okexWSPublic.SubscribeTicker([]string{"BTC-USDT", "ETH-USDT"})
 	time.Sleep(time.Second * 5)
@@ -34,7 +34,7 @@ func TestSubscribeTicker(t *testing.T) {
 
 func TestSubscribeDepth(t *testing.T) {
 	event.GetEventEngine().Init()
-	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, okexRespHandler)
+	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, OkexRespHandler)
 	okexWSPublic.ConnectWS()
 	okexWSPublic.SubscribeDepth([]string{"BTC-USDT", "ETH-USDT"})
 	time.Sleep(time.Second * 5)
@@ -62,7 +62,7 @@ func TestGenSign(t *testing.T) {
 
 func TestPrivateWS(t *testing.T) {
 
-	privateWS := NewOKExWSClient(PRIVATE_WEBSOCKET_HOST_CHINA, okexRespHandler)
+	privateWS := NewOKExWSClient(PRIVATE_WEBSOCKET_HOST_CHINA, OkexRespHandler)
 	privateWS.ConnectWS()
 	//登录
 	privateWS.Login(apiConfig)
@@ -74,7 +74,7 @@ func TestPrivateWS(t *testing.T) {
 
 func TestSendLimitOrder(t *testing.T) {
 
-	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, okexRespHandler)
+	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
 	privateWS.ConnectWS()
 	//登录
 	privateWS.Login(apiConfig)
@@ -90,7 +90,7 @@ func TestSendLimitOrder(t *testing.T) {
 
 //订阅余额和持仓
 func TestSubscribeBalAndPos(t *testing.T) {
-	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, okexRespHandler)
+	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
 	privateWS.ConnectWS()
 	//登录
 	privateWS.Login(apiConfig)

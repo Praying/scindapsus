@@ -44,7 +44,7 @@ type Exchange interface {
 	CreateOrder()
 }
 
-func okexRespHandler(channel string, data json.RawMessage) error {
+func OkexRespHandler(channel string, data json.RawMessage) error {
 	switch channel {
 	case "tickers":
 		tickerData := parseTickerData(data)

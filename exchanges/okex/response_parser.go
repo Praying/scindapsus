@@ -3,7 +3,8 @@ package okex
 import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
-	"scindapsus/strategy"
+	bd "scindapsus/basedata"
+
 	"strconv"
 	"time"
 )
@@ -26,14 +27,14 @@ func stringToInt64(input string) int64 {
 }
 
 //根据交易所返回的Ticker数据返回统一的TickerData格式
-func parseTickerData(data []byte) *strategy.TickerData {
+func parseTickerData(data []byte) *bd.TickerData {
 	var tickerResp TickerResp
 	err := json.Unmarshal(data, &tickerResp)
 	if err != nil {
 		log.Errorf("error:%s \nUnmarshal data:%s to TickerResp failed", err.Error(), string(data))
 		return nil
 	}
-	tickerData := &strategy.TickerData{
+	tickerData := &bd.TickerData{
 		Symbol:        tickerResp.Arg.Instid,
 		TimeStamp:     stringToInt64(tickerResp.Data[0].Ts),
 		DateTime:      time.Unix(stringToInt64(tickerResp.Data[0].Ts), 0),
@@ -58,29 +59,29 @@ func parseTickerData(data []byte) *strategy.TickerData {
 	return tickerData
 }
 
-func parseBookData(data []byte) *strategy.BookData {
+func parseBookData(data []byte) *bd.BookData {
 	var bookResp BookResp
 	if err := json.Unmarshal(data, &bookResp); err != nil {
 		log.Errorf("error:%s \nUnmarshal data:%s to BookResp failed", err.Error(), string(data))
 		return nil
 	}
 
-	bookData := &strategy.BookData{
+	bookData := &bd.BookData{
 		Symbol:  bookResp.Arg.InstID,
 		Action:  bookResp.Action,
-		AskList: make([]strategy.BookRecord, 0),
-		BidList: make([]strategy.BookRecord, 0),
+		AskList: make([]bd.BookRecord, 0),
+		BidList: make([]bd.BookRecord, 0),
 	}
 	if len(bookResp.Data) == 1 {
 		for _, ask := range bookResp.Data[0].Asks {
-			bookRecord := strategy.BookRecord{
+			bookRecord := bd.BookRecord{
 				Price:  stringTof64(ask[0]),
 				Volume: stringTof64(ask[1]),
 			}
 			bookData.AskList = append(bookData.AskList, bookRecord)
 		}
 		for _, bid := range bookResp.Data[0].Bids {
-			bookRecord := strategy.BookRecord{
+			bookRecord := bd.BookRecord{
 				Price:  stringTof64(bid[0]),
 				Volume: stringTof64(bid[1]),
 			}
@@ -91,18 +92,18 @@ func parseBookData(data []byte) *strategy.BookData {
 	return bookData
 }
 
-func parsePositionData(data []byte) *strategy.PositionData {
+func parsePositionData(data []byte) *bd.PositionData {
 	var positionResp PositionResp
 	if err := json.Unmarshal(data, &positionResp); err != nil {
 		log.Errorf("error:%s \nUnmarshal data:%s to PositionResp failed", err.Error(), string(data))
 		return nil
 	}
-	positionData := &strategy.PositionData{}
+	positionData := &bd.PositionData{}
 	return positionData
 }
 
-func parseOrderData(data []byte) *strategy.OrderData {
-	orderData := &strategy.OrderData{}
+func parseOrderData(data []byte) *bd.OrderData {
+	orderData := &bd.OrderData{}
 	return orderData
 }
 
