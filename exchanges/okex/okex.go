@@ -7,14 +7,19 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"net/http"
+	"scindapsus/config"
+
 	"scindapsus/event"
 	"scindapsus/websocket"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	_ "scindapsus/config"
 )
+
+type APIConfig = config.APIConfig
 
 /*
 const REST_HOST_CHINA: &str = "https://www.okex.win";
@@ -355,16 +360,6 @@ func NewOKExV3Ws(base *OKEx, handle func(channel string, data json.RawMessage) e
 type OKExRestClient struct {
 }
 
-type APIConfig struct {
-	HttpClient    *http.Client
-	Endpoint      string
-	ApiKey        string
-	ApiSecretKey  string
-	ApiPassphrase string //for okex.com v3 api
-	ClientId      string //for bitstamp.net , huobi.pro
-
-	Lever float64 //杠杆倍数 , for future
-}
 type OKExExchange struct {
 	//Rest和WebSocket
 	publicWS   *OKExWSClient
