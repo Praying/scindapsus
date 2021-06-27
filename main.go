@@ -8,5 +8,6 @@ func main() {
 	ap := app.App{}
 	builder := ap.Builder()
 	builder.Init()
+	builder.Start()
 	builder.Run()
 }

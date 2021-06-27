@@ -14,9 +14,9 @@ func init() {
 	apiConfig = &APIConfig{
 		HttpClient:    nil,
 		Endpoint:      "",
-		ApiKey:        "",
-		ApiSecretKey:  "",
-		ApiPassphrase: "",
+		ApiKey:        "befbebe7-55af-4f86-a484-ed6eb8553879",
+		ApiSecretKey:  "3F65A4EB0A0EEFB1E31DA35982E1B8E6",
+		ApiPassphrase: "cyjqr1314",
 		ClientId:      "",
 		Lever:         0,
 	}
@@ -26,9 +26,9 @@ func TestSubscribeTicker(t *testing.T) {
 	event.GetEventEngine().Init()
 	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, OkexRespHandler)
 	okexWSPublic.ConnectWS()
-	okexWSPublic.SubscribeTicker([]string{"BTC-USDT", "ETH-USDT"})
+	okexWSPublic.WatchTicker([]string{"BTC-USDT", "ETH-USDT"})
 	time.Sleep(time.Second * 5)
-	okexWSPublic.UnSubscribeTicker([]string{"BTC-USDT"})
+	okexWSPublic.UnWatchTicker([]string{"BTC-USDT"})
 	time.Sleep(time.Second * 5)
 }
 
@@ -36,9 +36,9 @@ func TestSubscribeDepth(t *testing.T) {
 	event.GetEventEngine().Init()
 	okexWSPublic := NewOKExWSClient(PUBLIC_WEBSOCKET_HOST_CHINA, OkexRespHandler)
 	okexWSPublic.ConnectWS()
-	okexWSPublic.SubscribeDepth([]string{"BTC-USDT", "ETH-USDT"})
+	okexWSPublic.WatchDepth([]string{"BTC-USDT", "ETH-USDT"})
 	time.Sleep(time.Second * 5)
-	okexWSPublic.UnSubscribeDepth([]string{"BTC-USDT"})
+	okexWSPublic.UnWatchDepth([]string{"BTC-USDT"})
 	time.Sleep(time.Second * 5)
 }
 
@@ -68,7 +68,7 @@ func TestPrivateWS(t *testing.T) {
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
 	//订阅持仓信息
-	privateWS.SubscribePosition("MARGIN", "SHIB-USDT")
+	privateWS.WatchPosition("MARGIN", "SHIB-USDT")
 	time.Sleep(5 * time.Second)
 }
 
@@ -82,7 +82,7 @@ func TestSendLimitOrder(t *testing.T) {
 	//订阅订单信息
 
 	//下单
-	if err := privateWS.CreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400); err != nil {
+	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(5 * time.Second)
@@ -93,11 +93,22 @@ func TestSubscribeBalAndPos(t *testing.T) {
 	privateWS := NewOKExWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
 	privateWS.ConnectWS()
 	//登录
+
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
 
 	if err := privateWS.SubscribeBalAndPos(); err != nil {
 		log.Errorln(err.Error())
 	}
+	privateWS.WatchPosition("MARGIN", "ETH-USDT")
 	time.Sleep(5 * time.Second)
+	//下单
+	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400); err != nil {
+		log.Errorln(err.Error())
+	}
+	time.Sleep(2 * time.Second)
+	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400); err != nil {
+		log.Errorln(err.Error())
+	}
+	time.Sleep(2 * time.Second)
 }

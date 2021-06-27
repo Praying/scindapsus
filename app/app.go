@@ -56,3 +56,7 @@ func (this *AppBuilder) Run() {
 	log.Infof("App ready to stop")
 
 }
+
+func (this *AppBuilder) Start() {
+	strategy.GetStrategyEngine().StartAllStrategies()
+}

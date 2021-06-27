@@ -174,3 +174,25 @@ type OrderResp struct {
 	Msg string `json:"msg"`
 	Op  string `json:"op"`
 }
+
+//订阅订单频道
+type OrderChParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+		Uly      string `json:"uly"`
+		InstID   string `json:"instId"`
+	} `json:"args"`
+}
+
+//撤单操作
+type CancelOrderParam struct {
+	ID   string `json:"id"`
+	Op   string `json:"op"`
+	Args []struct {
+		InstID  string `json:"instId"`
+		OrdID   string `json:"ordId"`
+		ClOrdID string `json:"clOrdId"`
+	} `json:"args"`
+}

@@ -98,8 +98,13 @@ func parsePositionData(data []byte) *bd.PositionData {
 		log.Errorf("error:%s \nUnmarshal data:%s to PositionResp failed", err.Error(), string(data))
 		return nil
 	}
-	positionData := &bd.PositionData{}
-	return positionData
+	for _, posData := range positionResp.Data {
+		positionData := &bd.PositionData{
+			Pos: stringTof64(posData.Pos),
+		}
+		return positionData
+	}
+	return nil
 }
 
 func parseOrderData(data []byte) *bd.OrderData {
@@ -113,6 +118,25 @@ func parseBalAndPosData(data []byte) interface{} {
 		log.Errorf("error: %s, Unmarshal data: %s to BalAndPostionResp", err.Error(), data)
 		return nil
 	}
-	log.Infof("%v", balAndPosResp)
+	var balAndPosData bd.BalAndPosData
+	balAndPosData.BalMap = make(map[string]float64)
+	balAndPosData.PositionMap = make(map[string]float64)
+	if len(balAndPosResp.Data) > 0 {
+		for _, data := range balAndPosResp.Data {
+			if len(data.BalData) > 0 {
+				for _, balData := range data.BalData {
+					balAndPosData.BalMap[balData.Ccy] = stringTof64(balData.CashBal)
+				}
+			}
+
+			if len(data.PosData) > 0 {
+				for _, posData := range data.PosData {
+					balAndPosData.PositionMap[posData.Ccy] = stringTof64(posData.Pos)
+				}
+			}
+		}
+	}
+
+	log.Infof("%v", balAndPosData)
 	return nil
 }

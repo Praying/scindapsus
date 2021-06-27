@@ -182,9 +182,16 @@ type PositionData struct {
 	Exchange  string
 	Direction int32
 
-	Volume    float64
+	//持仓数量
+	Pos       float64
 	Frozen    float64
 	Price     float64
 	PNL       float64
 	YD_Volume float64
+}
+
+type BalAndPosData struct {
+	//{"USDT":190.0, "ETH":312.3}
+	BalMap      map[string]float64
+	PositionMap map[string]float64
 }

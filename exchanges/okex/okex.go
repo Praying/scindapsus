@@ -8,6 +8,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"scindapsus/config"
+	"scindapsus/util"
 
 	"scindapsus/event"
 	"scindapsus/websocket"
@@ -17,6 +18,14 @@ import (
 	"time"
 
 	_ "scindapsus/config"
+)
+
+const (
+	MARGIN  string = "MARGIN"  //币币
+	SWAP    string = "SWAP"    //永续合约
+	FUTURES string = "FUTURES" //交割合约
+	OPTION  string = "OPTION"  //期权
+	ANY     string = "ANY"     //全部
 )
 
 type APIConfig = config.APIConfig
@@ -45,15 +54,11 @@ const PRIVATE_WEBSOCKET_HOST string = "wss://ws.okex.com:8443/ws/v5/private"
 const TEST_PUBLIC_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/public?brokerId=9999"
 const TEST_PRIVATE_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/private?brokerId=9999"
 
-type Exchange interface {
-	CreateOrder()
-}
-
 func OkexRespHandler(channel string, data json.RawMessage) error {
 	switch channel {
 	case "tickers":
 		tickerData := parseTickerData(data)
-		event.GetEventEngine().TickerChan <- (*tickerData)
+		event.GetEventEngine().TickerChan <- *tickerData
 		return nil
 	case "books":
 		fallthrough
@@ -63,15 +68,15 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 		fallthrough
 	case "books50-l2-tbt":
 		bookData := parseBookData(data)
-		event.GetEventEngine().BookChan <- (*bookData)
+		event.GetEventEngine().BookChan <- *bookData
 		return nil
 	case "position":
 		positionData := parsePositionData(data)
-		event.GetEventEngine().PositionChan <- (*positionData)
+		event.GetEventEngine().PositionChan <- *positionData
 		return nil
 	case "orders":
 		orderData := parseOrderData(data)
-		event.GetEventEngine().OrderChan <- (*orderData)
+		event.GetEventEngine().OrderChan <- *orderData
 		return nil
 	case "balance_and_position":
 		log.Info(data)
@@ -120,7 +125,7 @@ func (wsClient *OKExWSClient) Subscribe(sub map[string]interface{}) error {
 func generateOrderID(symbol string, orderType string) string {
 	return fmt.Sprintf("%s-%s-%d", symbol, orderType, time.Now().Nanosecond())
 }
-func (wsClient *OKExWSClient) CreateOrder(symbol, orderType, side string, amount, price float64) error {
+func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64) error {
 	//Symbol-时间戳-OrderType
 	//orderId := generateOrderID(symbol, orderType)
 	orderId := fmt.Sprintf("%d", 1)
@@ -194,7 +199,7 @@ func (wsClient *OKExWSClient) Login(config *APIConfig) error {
 }
 
 //订阅行情Ticker数据
-func (wsClient *OKExWSClient) SubscribeTicker(currencyPairs []string) error {
+func (wsClient *OKExWSClient) WatchTicker(currencyPairs []string) error {
 	var subParam SubParam
 	subParam.Op = "subscribe"
 	for _, currencyPair := range currencyPairs {
@@ -207,7 +212,7 @@ func (wsClient *OKExWSClient) SubscribeTicker(currencyPairs []string) error {
 	return nil
 }
 
-func (wsClient *OKExWSClient) UnSubscribeTicker(currencyPairs []string) error {
+func (wsClient *OKExWSClient) UnWatchTicker(currencyPairs []string) error {
 	var subParam SubParam
 	subParam.Op = "unsubscribe"
 	for _, currencyPair := range currencyPairs {
@@ -221,7 +226,15 @@ func (wsClient *OKExWSClient) UnSubscribeTicker(currencyPairs []string) error {
 }
 
 //订阅持仓
-func (wsClient *OKExWSClient) SubscribePosition(instType string, instID string) error {
+/*
+	产品类型
+MARGIN：币币杠杆
+SWAP：永续合约
+FUTURES：交割合约
+OPTION：期权
+ANY：全部
+*/
+func (wsClient *OKExWSClient) WatchPosition(instType string, instID string) error {
 	//TODO
 	var positionParam PositionParam
 	positionParam.Op = "subscribe"
@@ -236,7 +249,7 @@ func (wsClient *OKExWSClient) SubscribePosition(instType string, instID string) 
 }
 
 //订阅深度数据
-func (wsClient *OKExWSClient) SubscribeDepth(currencyPairs []string) error {
+func (wsClient *OKExWSClient) WatchDepth(currencyPairs []string) error {
 	var subParam SubParam
 	subParam.Op = "subscribe"
 	for _, currencyPair := range currencyPairs {
@@ -260,7 +273,7 @@ func (wsClient *OKExWSClient) SubscribeBalAndPos() error {
 	return nil
 }
 
-func (wsClient *OKExWSClient) UnSubscribeDepth(currencyPairs []string) error {
+func (wsClient *OKExWSClient) UnWatchDepth(currencyPairs []string) error {
 	var subParam SubParam
 	subParam.Op = "unsubscribe"
 	for _, currencyPair := range currencyPairs {
@@ -335,7 +348,38 @@ func (wsClient *OKExWSClient) handle(msg []byte) error {
 	return nil
 }
 
-//func (wsClient *OKExWSClient) SubscribePosition(s string, s2 string, s3 string, i int, i2 int) interface{} {
+//通过WebSocket撤单
+//订单ID
+//ordId和clOrdId必须传一个，若传两个，以 ordId 为主
+func (wsClient *OKExWSClient) WatchCancelOrder(orderId string, symbol string) {
+	var cancelOrderParam CancelOrderParam
+	//消息的唯一标识
+	//用户提供，返回参数中会返回以便于找到相应的请求。
+	//字母（区分大小写）与数字的组合，可以是纯字母、纯数字且长度必须要在1-32位之间。
+	cancelOrderParam.ID = util.RandStringBytesMaskImprSrc(24)
+	cancelOrderParam.Op = "cancel-order"
+	cancelOrderParam.Args = append(cancelOrderParam.Args, struct {
+		InstID  string `json:"instId"`
+		OrdID   string `json:"ordId"`
+		ClOrdID string `json:"clOrdId"`
+	}{InstID: symbol, OrdID: orderId, ClOrdID: ""})
+	wsClient.WSConn.Subscribe(cancelOrderParam)
+}
+
+//订单频道的订阅
+func (wsClient *OKExWSClient) WatchOrders(instType string, symbol string) {
+	var orderChParam OrderChParam
+	orderChParam.Op = "subscribe"
+	orderChParam.Args = append(orderChParam.Args, struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+		Uly      string `json:"uly"`
+		InstID   string `json:"instId"`
+	}{Channel: "orders", InstType: instType, Uly: "", InstID: symbol})
+	wsClient.WSConn.Subscribe(orderChParam)
+}
+
+//func (wsClient *OKExWSClient) WatchPosition(s string, s2 string, s3 string, i int, i2 int) interface{} {
 //
 //}
 

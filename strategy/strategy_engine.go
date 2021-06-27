@@ -3,6 +3,7 @@ package strategy
 import (
 	log "github.com/sirupsen/logrus"
 	bd "scindapsus/basedata"
+	"scindapsus/config"
 	"sync"
 )
 
@@ -56,11 +57,46 @@ func (this *StrategyEngine) addStrategy(strategy AbstractStrategy) {
 	this.SymbolStrategyMap[(strategy).Symbol()] = append(this.SymbolStrategyMap[strategy.Symbol()], strategy)
 }
 func (this *StrategyEngine) InitAllStrategies() {
+	apiConfig := config.GetConfigEngine().ReadConfig()
 	for _, strategy := range this.Strategies {
-		strategy.Init()
+		go func(strategy AbstractStrategy) {
+			if strategy.IsInited() {
+				log.Info("[%s] has been inited", strategy.Name())
+				return
+			}
+			strategy.Init(apiConfig)
+			//数据可能需要恢复
+			//行情订阅
+		}(strategy)
+
 	}
 }
-func (this *StrategyEngine) StartAllStrategies() {}
+func (this *StrategyEngine) StartAllStrategies() {
+	for _, strategy := range this.Strategies {
+		go func(strategy AbstractStrategy) {
+			if !strategy.IsInited() {
+				log.Infof("[%s] should be init first", strategy.Name())
+				return
+			}
+			if strategy.IsTrading() {
+				log.Infof("[%s] has been trading", strategy.Name())
+				return
+			}
+
+			strategy.OnStart()
+
+		}(strategy)
+
+	}
+}
+
+func (this *StrategyEngine) StopAllStrategies() {
+	for _, strategy := range this.Strategies {
+		go func(strategy AbstractStrategy) {
+			strategy.OnStop()
+		}(strategy)
+	}
+}
 func (this *StrategyEngine) ProcessTickerData(tickerData bd.TickerData) {
 	if len(this.SymbolStrategyMap[tickerData.Symbol]) > 0 {
 		for _, strategy := range this.SymbolStrategyMap[tickerData.Symbol] {
@@ -83,7 +119,21 @@ func (this *StrategyEngine) ProcessTradeData(tradeData bd.TradeData) {
 }
 
 func (this *StrategyEngine) ProcessPositionData(positionData bd.PositionData) {
+	symbol := positionData.Symbol
+	if len(this.SymbolStrategyMap[positionData.Symbol]) > 0 {
+		for _, strategy := range this.SymbolStrategyMap[symbol] {
+			strategy.OnPosition(positionData)
+		}
+	}
 	log.Info("process postion data")
+}
+
+func (this *StrategyEngine) ProcessBalAndPosData(balAndPosData bd.BalAndPosData) {
+	for _, strategy := range this.Strategies {
+		strategy.OnBalAndPos(balAndPosData)
+	}
+
+	log.Info("process ")
 }
 
 func (this *StrategyEngine) ProcessBookData(bookData bd.BookData) {
