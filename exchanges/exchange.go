@@ -54,12 +54,13 @@ func (Ok *OKExchange) WatchOHLCV(symbol string, timeframe string, since string, 
 	panic("implement me")
 }
 
+//公共频道的方法
 func (Ok *OKExchange) WatchTrades(symbol, since string, limit string, params interface{}) {
-	panic("implement me")
+	Ok.publicWS.WatchTrades(symbol)
 }
 
 func (Ok *OKExchange) WatchBalance(params interface{}) {
-	Ok.privateWS.SubscribeBalAndPos()
+	Ok.privateWS.WatchBalAndPos()
 }
 
 func (Ok *OKExchange) WatchOrders(symbol string, since string, limit string, params interface{}) {
@@ -75,6 +76,7 @@ func (Ok *OKExchange) WatchCancelOrder(id, symbol string, params interface{}) {
 }
 
 func (Ok *OKExchange) WatchMyTrades(symbol, since, limit, params interface{}) {
+	//这是想看到交易量
 	panic("implement me")
 }
 

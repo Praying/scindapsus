@@ -91,7 +91,7 @@ func (strategy *SpotGridMartinStrategy) Init(apiConfig *config.APIConfig) {
 	symbols := []string{"ETH-USDT"}
 	strategy.privWS.Login(apiConfig)
 	strategy.pubWS.WatchTicker(symbols)
-	strategy.privWS.SubscribeBalAndPos()
+	strategy.privWS.WatchBalAndPos()
 	strategy.pubWS.WatchDepth(symbols)
 	strategy.Inited = true
 	log.Infof("[%s] inited", strategy.StName)

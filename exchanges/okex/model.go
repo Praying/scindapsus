@@ -132,6 +132,14 @@ type OrderParam struct {
 }
 
 //余额和持仓
+
+type BalAndPosParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel string `json:"channel"`
+	} `json:"args"`
+}
+
 type BalAndPosResp struct {
 	Arg struct {
 		Channel string `json:"channel"`
@@ -194,5 +202,13 @@ type CancelOrderParam struct {
 		InstID  string `json:"instId"`
 		OrdID   string `json:"ordId"`
 		ClOrdID string `json:"clOrdId"`
+	} `json:"args"`
+}
+
+type TradesParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
 	} `json:"args"`
 }

@@ -28,6 +28,11 @@ const (
 	ANY     string = "ANY"     //全部
 )
 
+const (
+	WS_SUBSCRIBE   string = "subscribe"
+	WS_UNSUBSCRIBE string = "unsubscribe"
+)
+
 type APIConfig = config.APIConfig
 
 /*
@@ -198,10 +203,9 @@ func (wsClient *OKExWSClient) Login(config *APIConfig) error {
 	return nil
 }
 
-//订阅行情Ticker数据
-func (wsClient *OKExWSClient) WatchTicker(currencyPairs []string) error {
+func (wsClient *OKExWSClient) doTicker(op string, currencyPairs []string) error {
 	var subParam SubParam
-	subParam.Op = "subscribe"
+	subParam.Op = op
 	for _, currencyPair := range currencyPairs {
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
@@ -212,17 +216,13 @@ func (wsClient *OKExWSClient) WatchTicker(currencyPairs []string) error {
 	return nil
 }
 
+//订阅行情Ticker数据
+func (wsClient *OKExWSClient) WatchTicker(currencyPairs []string) error {
+	return wsClient.doTicker(WS_SUBSCRIBE, currencyPairs)
+}
+
 func (wsClient *OKExWSClient) UnWatchTicker(currencyPairs []string) error {
-	var subParam SubParam
-	subParam.Op = "unsubscribe"
-	for _, currencyPair := range currencyPairs {
-		subParam.Args = append(subParam.Args, struct {
-			Channel string `json:"channel"`
-			InstID  string `json:"instId"`
-		}{"tickers", currencyPair})
-	}
-	wsClient.WSConn.Subscribe(subParam)
-	return nil
+	return wsClient.doTicker(WS_UNSUBSCRIBE, currencyPairs)
 }
 
 //订阅持仓
@@ -234,10 +234,9 @@ FUTURES：交割合约
 OPTION：期权
 ANY：全部
 */
-func (wsClient *OKExWSClient) WatchPosition(instType string, instID string) error {
-	//TODO
+func (wsClient *OKExWSClient) doPosition(op string, instType string, instID string) error {
 	var positionParam PositionParam
-	positionParam.Op = "subscribe"
+	positionParam.Op = op
 	positionParam.Args = append(positionParam.Args, struct {
 		Channel  string `json:"channel"`  //必填
 		InstType string `json:"instType"` //必填
@@ -248,10 +247,17 @@ func (wsClient *OKExWSClient) WatchPosition(instType string, instID string) erro
 	return nil
 }
 
+func (wsClient *OKExWSClient) WatchPosition(instType string, instID string) error {
+	return wsClient.doPosition(WS_SUBSCRIBE, instType, instID)
+}
+func (wsClient *OKExWSClient) UnWatchPosition(instType string, instID string) error {
+	return wsClient.doPosition(WS_UNSUBSCRIBE, instType, instID)
+}
+
 //订阅深度数据
-func (wsClient *OKExWSClient) WatchDepth(currencyPairs []string) error {
+func (wsClient *OKExWSClient) doDepth(op string, currencyPairs []string) error {
 	var subParam SubParam
-	subParam.Op = "subscribe"
+	subParam.Op = op
 	for _, currencyPair := range currencyPairs {
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
@@ -261,29 +267,30 @@ func (wsClient *OKExWSClient) WatchDepth(currencyPairs []string) error {
 	wsClient.WSConn.Subscribe(subParam)
 	return nil
 }
-
-func (wsClient *OKExWSClient) SubscribeBalAndPos() error {
-	param := `{
-    "op": "subscribe",
-    "args": [{
-        "channel": "balance_and_position"
-    }]
-	}`
-	wsClient.WSConn.SendMessage([]byte(param))
-	return nil
+func (wsClient *OKExWSClient) WatchDepth(currencyPairs []string) error {
+	return wsClient.doDepth(WS_SUBSCRIBE, currencyPairs)
 }
 
 func (wsClient *OKExWSClient) UnWatchDepth(currencyPairs []string) error {
-	var subParam SubParam
-	subParam.Op = "unsubscribe"
-	for _, currencyPair := range currencyPairs {
-		subParam.Args = append(subParam.Args, struct {
-			Channel string `json:"channel"`
-			InstID  string `json:"instId"`
-		}{"books", currencyPair})
-	}
-	wsClient.WSConn.Subscribe(subParam)
+	return wsClient.doDepth(WS_UNSUBSCRIBE, currencyPairs)
+}
+
+func (wsClient *OKExWSClient) doBalAndPos(op string) error {
+	var param BalAndPosParam
+	param.Op = op
+	param.Args = append(param.Args, struct {
+		Channel string `json:"channel"`
+	}{Channel: "balance_and_position"})
+	wsClient.WSConn.Subscribe(param)
 	return nil
+}
+
+func (wsClient *OKExWSClient) WatchBalAndPos() error {
+	return wsClient.doBalAndPos(WS_SUBSCRIBE)
+}
+
+func (wsClient *OKExWSClient) UnWatchBalAndPos() error {
+	return wsClient.doBalAndPos(WS_UNSUBSCRIBE)
 }
 
 func (wsClient *OKExWSClient) handle(msg []byte) error {
@@ -367,9 +374,9 @@ func (wsClient *OKExWSClient) WatchCancelOrder(orderId string, symbol string) {
 }
 
 //订单频道的订阅
-func (wsClient *OKExWSClient) WatchOrders(instType string, symbol string) {
+func (wsClient *OKExWSClient) doOrders(op string, instType string, symbol string) error {
 	var orderChParam OrderChParam
-	orderChParam.Op = "subscribe"
+	orderChParam.Op = op
 	orderChParam.Args = append(orderChParam.Args, struct {
 		Channel  string `json:"channel"`
 		InstType string `json:"instType"`
@@ -377,29 +384,35 @@ func (wsClient *OKExWSClient) WatchOrders(instType string, symbol string) {
 		InstID   string `json:"instId"`
 	}{Channel: "orders", InstType: instType, Uly: "", InstID: symbol})
 	wsClient.WSConn.Subscribe(orderChParam)
+	return nil
 }
 
-//func (wsClient *OKExWSClient) WatchPosition(s string, s2 string, s3 string, i int, i2 int) interface{} {
-//
-//}
-
-/*
-func NewOKExV3Ws(base *OKEx, handle func(channel string, data json.RawMessage) error) *OKExV3Ws {
-	okV3Ws := &OKExV3Ws{
-		once:       new(sync.Once),
-		base:       base,
-		respHandle: handle,
-	}
-	okV3Ws.WsBuilder = NewWsBuilder().
-		WsUrl("wss://real.okex.com:8443/ws/v3").
-		ReconnectInterval(time.Second).
-		AutoReconnect().
-		Heartbeat(func() []byte { return []byte("ping") }, 28*time.Second).
-		DecompressFunc(FlateDecompress).ProtoHandleFunc(okV3Ws.handle)
-	return okV3Ws
+func (wsClient *OKExWSClient) WatchOrders(instType string, symbol string) error {
+	return wsClient.doOrders(WS_SUBSCRIBE, instType, symbol)
 }
 
-*/
+func (wsClient *OKExWSClient) UnWatchOrders(instType string, symbol string) error {
+	return wsClient.doOrders(WS_UNSUBSCRIBE, instType, symbol)
+}
+
+func (wsClient *OKExWSClient) doTrades(op string, symbol string) error {
+	var tradesParam TradesParam
+	tradesParam.Op = op
+	tradesParam.Args = append(tradesParam.Args, struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	}{Channel: "trades", InstID: symbol})
+	wsClient.WSConn.Subscribe(tradesParam)
+	return nil
+}
+
+func (wsClient *OKExWSClient) WatchTrades(symbol string) error {
+	return wsClient.doTrades(WS_SUBSCRIBE, symbol)
+}
+
+func (wsClient *OKExWSClient) UnWatchTrades(symbol string) error {
+	return wsClient.doTrades(WS_UNSUBSCRIBE, symbol)
+}
 
 type OKExRestClient struct {
 }

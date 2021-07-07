@@ -97,7 +97,7 @@ func TestSubscribeBalAndPos(t *testing.T) {
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
 
-	if err := privateWS.SubscribeBalAndPos(); err != nil {
+	if err := privateWS.WatchBalAndPos(); err != nil {
 		log.Errorln(err.Error())
 	}
 	privateWS.WatchPosition("MARGIN", "ETH-USDT")
