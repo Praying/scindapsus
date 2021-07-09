@@ -115,7 +115,9 @@ func (this *StrategyEngine) ProcessOrderData(orderData bd.OrderData) {
 }
 
 func (this *StrategyEngine) ProcessTradeData(tradeData bd.TradeData) {
-	log.Info("process trade data")
+	for _, strategy := range this.SymbolStrategyMap[tradeData.Symbol] {
+		strategy.OnTrade(tradeData)
+	}
 }
 
 func (this *StrategyEngine) ProcessPositionData(positionData bd.PositionData) {
@@ -132,8 +134,6 @@ func (this *StrategyEngine) ProcessBalAndPosData(balAndPosData bd.BalAndPosData)
 	for _, strategy := range this.Strategies {
 		strategy.OnBalAndPos(balAndPosData)
 	}
-
-	log.Info("process ")
 }
 
 func (this *StrategyEngine) ProcessBookData(bookData bd.BookData) {

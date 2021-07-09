@@ -10,16 +10,23 @@ import (
 	"scindapsus/config"
 	"scindapsus/util"
 
-	"scindapsus/event"
 	"scindapsus/websocket"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	_ "scindapsus/config"
 )
 
+/*
+产品类型
+SPOT：币币
+MARGIN：币币杠杆
+SWAP：永续合约
+FUTURES：交割合约
+OPTION：期权
+ANY：全部
+*/
 const (
 	MARGIN  string = "MARGIN"  //币币
 	SWAP    string = "SWAP"    //永续合约
@@ -58,41 +65,6 @@ const PRIVATE_WEBSOCKET_HOST string = "wss://ws.okex.com:8443/ws/v5/private"
 
 const TEST_PUBLIC_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/public?brokerId=9999"
 const TEST_PRIVATE_WEBSOCKET_HOST string = "wss://wspri.coinall.ltd:8443/ws/v5/private?brokerId=9999"
-
-func OkexRespHandler(channel string, data json.RawMessage) error {
-	switch channel {
-	case "tickers":
-		tickerData := parseTickerData(data)
-		event.GetEventEngine().TickerChan <- *tickerData
-		return nil
-	case "books":
-		fallthrough
-	case "books5":
-		fallthrough
-	case "books-l2-tbt":
-		fallthrough
-	case "books50-l2-tbt":
-		bookData := parseBookData(data)
-		event.GetEventEngine().BookChan <- *bookData
-		return nil
-	case "position":
-		positionData := parsePositionData(data)
-		event.GetEventEngine().PositionChan <- *positionData
-		return nil
-	case "orders":
-		orderData := parseOrderData(data)
-		event.GetEventEngine().OrderChan <- *orderData
-		return nil
-	case "balance_and_position":
-		log.Info(data)
-		parseBalAndPosData(data)
-		//event.GetEventEngine().BalAndPosChan
-		return nil
-	default:
-		return nil
-	}
-	return nil
-}
 
 type OKExWSClient struct {
 	*websocket.WsBuilder
@@ -291,68 +263,6 @@ func (wsClient *OKExWSClient) WatchBalAndPos() error {
 
 func (wsClient *OKExWSClient) UnWatchBalAndPos() error {
 	return wsClient.doBalAndPos(WS_UNSUBSCRIBE)
-}
-
-func (wsClient *OKExWSClient) handle(msg []byte) error {
-	//TODO
-	log.Info("[ws][response]", string(msg))
-	if string(msg) == "pong" {
-		return nil
-	} else if strings.Contains(string(msg), "clOrdId") {
-		//处理下单的状态
-		var orderResp OrderResp
-		err := json.Unmarshal(msg, &orderResp)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		if orderResp.Code == "1" {
-			if len(orderResp.Data) > 0 {
-				log.Errorf("clOrdId:%s, ordId:%s,sCode:%s, sMsg:%s", orderResp.Data[0].ClOrdID, orderResp.Data[0].OrdID, orderResp.Data[0].SCode, orderResp.Data[0].SMsg)
-				return fmt.Errorf("clOrdId:%s, ordId:%s,sCode:%s, sMsg:%s", orderResp.Data[0].ClOrdID, orderResp.Data[0].OrdID, orderResp.Data[0].SCode, orderResp.Data[0].SMsg)
-			}
-		} else if orderResp.Code == "0" {
-			log.Infof("order successful: ordId: %s", orderResp.Data[0].OrdID)
-			return nil
-		}
-
-	} else if strings.Contains(string(msg), "event") {
-		//处理订阅事件的状态
-		var wsResp wsResp
-		err := json.Unmarshal(msg, &wsResp)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		if wsResp.Event != "" {
-			switch wsResp.Event {
-			case "subscribe":
-				log.Info("subscribed:", wsResp.Arg.Channel)
-				return nil
-			case "unsubscribe":
-				log.Info("unsubscribed:", wsResp.Arg.Channel)
-				return nil
-			case "login":
-				log.Info("login:", string(msg))
-			case "error":
-				log.Errorf(string(msg))
-			default:
-				log.Info(string(msg))
-			}
-			return fmt.Errorf("unknown websocket message: %v", wsResp)
-		}
-		if wsResp.Code != "0" {
-			log.Errorf("error")
-		}
-
-		if wsResp.Arg.Channel != "" {
-			return wsClient.respHandler(wsResp.Arg.Channel, msg)
-		}
-
-	}
-
-	return nil
 }
 
 //通过WebSocket撤单

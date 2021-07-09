@@ -112,15 +112,17 @@ func parseOrderData(data []byte) *bd.OrderData {
 	return orderData
 }
 
-func parseBalAndPosData(data []byte) interface{} {
+func parseBalAndPosData(data []byte) *bd.BalAndPosData {
 	var balAndPosResp BalAndPosResp
 	if err := json.Unmarshal(data, &balAndPosResp); err != nil {
 		log.Errorf("error: %s, Unmarshal data: %s to BalAndPostionResp", err.Error(), data)
 		return nil
 	}
-	var balAndPosData bd.BalAndPosData
-	balAndPosData.BalMap = make(map[string]float64)
-	balAndPosData.PositionMap = make(map[string]float64)
+	balAndPosData := &bd.BalAndPosData{
+		BalMap:      make(map[string]float64),
+		PositionMap: make(map[string]float64),
+	}
+
 	if len(balAndPosResp.Data) > 0 {
 		for _, data := range balAndPosResp.Data {
 			if len(data.BalData) > 0 {
@@ -136,7 +138,97 @@ func parseBalAndPosData(data []byte) interface{} {
 			}
 		}
 	}
-
-	log.Infof("%v", balAndPosData)
+	return balAndPosData
 	return nil
+}
+
+/*
+   def on_order(self, packet: dict) -> None:
+       """委托更新推送"""
+       data = packet["data"]
+       for d in data:
+           order: OrderData = parse_order_data(d, self.gateway_name)
+           self.gateway.on_order(order)
+
+           # 检查是否有成交
+           if d["fillSz"] == "0":
+               return
+
+           # 将成交数量四舍五入到正确精度
+           trade_volume: float = float(d["fillSz"])
+           contract: ContractData = symbol_contract_map.get(order.symbol, None)
+           if contract:
+               trade_volume = round_to(trade_volume, contract.min_volume)
+
+           trade: TradeData = TradeData(
+               symbol=order.symbol,
+               exchange=order.exchange,
+               orderid=order.orderid,
+               tradeid=d["tradeId"],
+               direction=order.direction,
+               offset=order.offset,
+               price=float(d["fillPx"]),
+               volume=trade_volume,
+               datetime=parse_timestamp(d["uTime"]),
+               gateway_name=self.gateway_name,
+           )
+           self.gateway.on_trade(trade)
+*/
+func parseOrdersInfo(data []byte) (*bd.OrderData, *bd.TradeData) {
+	var ordersInfo OrdersInfo
+	if err := json.Unmarshal(data, &ordersInfo); err != nil {
+		log.Errorf("error: %s, Unmarshal data: %s to BalAndPostionResp", err.Error(), data)
+		return nil, nil
+	}
+	for _, item := range ordersInfo.Data {
+		//检查是否哟成交
+		orderId := item.ClOrdID
+		if orderId == "" {
+			orderId = item.OrdID
+		}
+		orderData := &bd.OrderData{
+			Symbol:    item.InstID,
+			Exchange:  bd.Exchange_OKEX,
+			OrderID:   orderId,
+			OrderType: bd.OrderType_Okex2Vt[item.OrdType],
+			Direction: bd.Direction_Okex2Vt[item.Side],
+			Offset:    "",
+			Price:     stringTof64(item.Px),
+			Volume:    stringTof64(item.Sz),
+			Traded:    stringTof64(item.AccFillSz),
+			Status:    bd.Status_Okex2Vt[item.State],
+			DateTime:  parseTime(item.CTime),
+			Reference: "",
+		}
+		if item.FillSz == "0" {
+			return orderData, nil
+		}
+		tradeData := &bd.TradeData{
+			Symbol:    item.InstID,
+			Exchange:  bd.Exchange_OKEX,
+			OrderID:   orderId,
+			TradeID:   item.TradeID,
+			Direction: bd.Direction_Okex2Vt[item.Side],
+			Price:     stringTof64(item.FillPx),
+			Volume:    stringTof64(item.FillSz),
+			Datetime:  parseTime(item.CTime),
+			STSymbol:  "",
+			STOrderID: "",
+			STTradeID: "",
+		}
+		return orderData, tradeData
+	}
+	return nil, nil
+}
+
+//@param 传入的timestamp是13位的时间戳
+func parseTime(timestamp string) time.Time {
+	//s:="1597026383085"
+	data, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		log.Errorf("parse %v failed", timestamp)
+		return time.Time{}
+	}
+	msec := data % 1000
+	return time.Unix(data/1000, msec*1000000)
 }

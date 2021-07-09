@@ -212,3 +212,54 @@ type TradesParam struct {
 		InstID  string `json:"instId"`
 	} `json:"args"`
 }
+
+//订单信息推送
+type OrdersInfo struct {
+	Arg struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+		InstID   string `json:"instId"`
+	} `json:"arg"`
+	Data []struct {
+		InstType        string `json:"instType"`
+		InstID          string `json:"instId"`
+		OrdID           string `json:"ordId"`
+		ClOrdID         string `json:"clOrdId"`
+		Tag             string `json:"tag"`
+		Px              string `json:"px"`
+		Sz              string `json:"sz"`
+		NotionalUsd     string `json:"notionalUsd"`
+		OrdType         string `json:"ordType"`
+		Side            string `json:"side"`
+		PosSide         string `json:"posSide"`
+		TdMode          string `json:"tdMode"`
+		FillSz          string `json:"fillSz"`
+		FillPx          string `json:"fillPx"`
+		TradeID         string `json:"tradeId"`
+		AccFillSz       string `json:"accFillSz"`
+		FillNotionalUsd string `json:"fillNotionalUsd"`
+		FillTime        string `json:"fillTime"`
+		FillFee         string `json:"fillFee"`
+		FillFeeCcy      string `json:"fillFeeCcy"`
+		ExecType        string `json:"execType"`
+		State           string `json:"state"`
+		AvgPx           string `json:"avgPx"`
+		Lever           string `json:"lever"`
+		TpTriggerPx     string `json:"tpTriggerPx"`
+		TpOrdPx         string `json:"tpOrdPx"`
+		SlTriggerPx     string `json:"slTriggerPx"`
+		SlOrdPx         string `json:"slOrdPx"`
+		FeeCcy          string `json:"feeCcy"`
+		Fee             string `json:"fee"`
+		RebateCcy       string `json:"rebateCcy"`
+		Rebate          string `json:"rebate"`
+		Pnl             string `json:"pnl"`
+		Category        string `json:"category"`
+		UTime           string `json:"uTime"`
+		CTime           string `json:"cTime"`
+		ReqID           string `json:"reqId"`
+		AmendResult     string `json:"amendResult"`
+		Code            string `json:"code"`
+		Msg             string `json:"msg"`
+	} `json:"data"`
+}

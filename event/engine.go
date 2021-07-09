@@ -19,6 +19,7 @@ const (
 	Event_POSITION
 	//深度
 	Event_BOOK
+	Event_BALANDPOS
 )
 
 var once sync.Once
@@ -43,24 +44,27 @@ func init() {
 	Event2String[Event_BAR] = "event_bar"
 	Event2String[Event_POSITION] = "event_position"
 	Event2String[Event_BOOK] = "event_book"
+	Event2String[Event_BALANDPOS] = "event_bal_and_pos"
 }
 
 type EventEngine struct {
-	EventBus     evbus.Bus
-	TickerChan   chan bd.TickerData
-	OrderChan    chan bd.OrderData
-	TradeChan    chan bd.TradeData
-	PositionChan chan bd.PositionData
-	BookChan     chan bd.BookData
+	EventBus      evbus.Bus
+	TickerChan    chan bd.TickerData
+	OrderChan     chan bd.OrderData
+	TradeChan     chan bd.TradeData
+	PositionChan  chan bd.PositionData
+	BookChan      chan bd.BookData
+	BalAndPosChan chan bd.BalAndPosData
 }
 
 func NewEventEngine() *EventEngine {
 	return &EventEngine{EventBus: evbus.New(),
-		TickerChan:   make(chan bd.TickerData, DEFUALT_CHANNEL_SIZE),
-		OrderChan:    make(chan bd.OrderData, DEFUALT_CHANNEL_SIZE),
-		TradeChan:    make(chan bd.TradeData, DEFUALT_CHANNEL_SIZE),
-		PositionChan: make(chan bd.PositionData, DEFUALT_CHANNEL_SIZE),
-		BookChan:     make(chan bd.BookData, DEFUALT_CHANNEL_SIZE),
+		TickerChan:    make(chan bd.TickerData, DEFUALT_CHANNEL_SIZE),
+		OrderChan:     make(chan bd.OrderData, DEFUALT_CHANNEL_SIZE),
+		TradeChan:     make(chan bd.TradeData, DEFUALT_CHANNEL_SIZE),
+		PositionChan:  make(chan bd.PositionData, DEFUALT_CHANNEL_SIZE),
+		BookChan:      make(chan bd.BookData, DEFUALT_CHANNEL_SIZE),
+		BalAndPosChan: make(chan bd.BalAndPosData, DEFUALT_CHANNEL_SIZE),
 	}
 }
 
@@ -79,6 +83,8 @@ func (eventEngine *EventEngine) Init() {
 				eventEngine.EventBus.Publish(Event2String[Event_POSITION], positionData)
 			case bookData := <-eventEngine.BookChan:
 				eventEngine.EventBus.Publish(Event2String[Event_BOOK], bookData)
+			case balAndPosData := <-eventEngine.BalAndPosChan:
+				eventEngine.EventBus.Publish(Event2String[Event_BALANDPOS], balAndPosData)
 			}
 		}
 	}(eventEngine)

@@ -4,7 +4,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -37,8 +36,8 @@ func GetConfigEngine() *ConfigEngine {
 }
 
 func (configEngine *ConfigEngine) ReadConfig() *APIConfig {
-	curPath, _ := os.Getwd()
-	viper.SetConfigFile(curPath + "/api.json")
+	//curPath, _ := os.Getwd()
+	viper.SetConfigFile("D:\\quant\\scindapsus\\config\\api.json")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Errorf("[config] parse config file failed:%s", err.Error())
 		return nil

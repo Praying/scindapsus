@@ -76,8 +76,7 @@ func (Ok *OKExchange) WatchCancelOrder(id, symbol string, params interface{}) {
 }
 
 func (Ok *OKExchange) WatchMyTrades(symbol, since, limit, params interface{}) {
-	//这是想看到交易量
-	panic("implement me")
+	//Ok.privateWS.watch
 }
 
 func (Ok *OKExchange) WatchPosition(symbol string) {

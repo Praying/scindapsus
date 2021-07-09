@@ -41,6 +41,9 @@ func (this *AppBuilder) Init() {
 	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_BOOK], func(bookData bd.BookData) {
 		strategy.GetStrategyEngine().ProcessBookData(bookData)
 	})
+	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_BALANDPOS], func(balAndPosData bd.BalAndPosData) {
+		strategy.GetStrategyEngine().ProcessBalAndPosData(balAndPosData)
+	})
 	event.GetEventEngine().Init()
 	strategy.GetStrategyEngine().Init()
 }

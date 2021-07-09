@@ -20,6 +20,10 @@ const (
 	Interval_TICK   Interval = "tick"
 )
 
+const (
+	Exchange_OKEX string = "OKEx"
+)
+
 type TickerData struct {
 	Symbol        string    //货币符号
 	TimeStamp     int64     //时间戳
@@ -118,8 +122,31 @@ const (
 	OrderType_MARKET OrderType = "市价"
 	OrderType_STOP   OrderType = "STOP"
 	OrderType_FAK    OrderType = "FAK"
+	OrderType_FOK    OrderType = "FOK"
 	OrderType_RFQ    OrderType = "询价"
 )
+
+var OrderType_Okex2Vt map[string]OrderType
+var Direction_Okex2Vt map[string]Direction
+
+//委托状态
+var Status_Okex2Vt map[string]Status
+
+func init() {
+	OrderType_Okex2Vt = make(map[string]OrderType)
+	OrderType_Okex2Vt["limit"] = OrderType_LIMIT
+	OrderType_Okex2Vt["fok"] = OrderType_FOK
+
+	Direction_Okex2Vt = make(map[string]Direction)
+	Direction_Okex2Vt["buy"] = Direction_LONG
+	Direction_Okex2Vt["sell"] = Direction_SHORT
+
+	Status_Okex2Vt = make(map[string]Status)
+	Status_Okex2Vt["live"] = Status_NOTTRADED
+	Status_Okex2Vt["partially_filled"] = Status_PARTTRADED
+	Status_Okex2Vt["filled"] = Status_ALLTRADED
+	Status_Okex2Vt["canceled"] = Status_CANCELLED
+}
 
 type Offset string
 
@@ -166,7 +193,7 @@ type TradeData struct {
 	Exchange  string
 	OrderID   string
 	TradeID   string
-	Direction int32
+	Direction Direction
 	//Offset
 	Price    float64
 	Volume   float64
