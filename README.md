@@ -2,7 +2,6 @@
 
 Scindapsus is trade engine write with golang!
 [![Go](https://github.com/Praying/scindapsus/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/Praying/scindapsus/actions/workflows/go.yml)
-
 ## Overview
 
 Scindapsus aims to implement a cryptocurrency trade engine. It adapts to OKEx exchange now with websocket and rest apis.
