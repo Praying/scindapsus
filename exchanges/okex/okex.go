@@ -102,7 +102,7 @@ func (wsClient *OKExWSClient) Subscribe(sub map[string]interface{}) error {
 func generateOrderID(symbol string, orderType string) string {
 	return fmt.Sprintf("%s-%s-%d", symbol, orderType, time.Now().Nanosecond())
 }
-func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64) error {
+func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64, clOrdID string) error {
 	//Symbol-时间戳-OrderType
 	//orderId := generateOrderID(symbol, orderType)
 	orderId := fmt.Sprintf("%d", 1)
@@ -130,7 +130,7 @@ func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, a
 		*/
 		Sz string `json:"sz"`
 		Px string `json:"px"`
-	}{ClOrderID: "xxsyydflsdfdsuf", Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
+	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
 	data, err := json.Marshal(orderParam)
 	if err != nil {
 		log.Errorf("[ws][%s] json encode orderParam error , %s", wsClient.WSConn.WsUrl, err)

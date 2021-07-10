@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -29,4 +30,12 @@ func RandStringBytesMaskImprSrc(n int) string {
 		remain--
 	}
 	return string(b)
+}
+
+func GenerateClOrdId(timestamp int64, orderCount int64) string {
+	tt := time.Unix(timestamp, 0)
+	year, month, day := tt.Date()
+	clOrdId := fmt.Sprintf("%d%02d%d%02d%02d%02d%06d", year, month, day, tt.Hour(),
+		tt.Minute(), tt.Second(), orderCount)
+	return clOrdId
 }

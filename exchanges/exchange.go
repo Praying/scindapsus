@@ -3,6 +3,8 @@ package exchanges
 import (
 	"scindapsus/config"
 	"scindapsus/exchanges/okex"
+	"scindapsus/util"
+	"time"
 )
 
 /*
@@ -68,7 +70,9 @@ func (Ok *OKExchange) WatchOrders(symbol string, since string, limit string, par
 }
 
 func (Ok *OKExchange) WatchCreateOrder(symbol, rtype, side string, amount, price float64, params interface{}) {
-	Ok.privateWS.WatchCreateOrder(symbol, rtype, side, amount, price)
+	clOrdId := util.GenerateClOrdId(Ok.ConnectTime, Ok.OrderCount)
+	Ok.OrderCount = Ok.OrderCount + 1
+	Ok.privateWS.WatchCreateOrder(symbol, rtype, side, amount, price, clOrdId)
 }
 
 func (Ok *OKExchange) WatchCancelOrder(id, symbol string, params interface{}) {
@@ -86,10 +90,15 @@ func (Ok *OKExchange) WatchPosition(symbol string) {
 type OKExchange struct {
 	publicWS  *okex.OKExWSClient
 	privateWS *okex.OKExWSClient
+	//生成订单的方式为 建立连接的时间+OrderCount
+	OrderCount  int64
+	ConnectTime int64
 }
 
 func NewOKExchange() *OKExchange {
-	return &OKExchange{}
+	return &OKExchange{
+		OrderCount: 0,
+	}
 }
 
 func (Ok *OKExchange) Init() {
@@ -100,4 +109,5 @@ func (Ok *OKExchange) Init() {
 	//登录
 	apiConfig := config.GetConfigEngine().ReadConfig()
 	Ok.privateWS.Login(apiConfig)
+	Ok.ConnectTime = time.Now().Unix()
 }
