@@ -222,3 +222,8 @@ type BalAndPosData struct {
 	BalMap      map[string]float64
 	PositionMap map[string]float64
 }
+
+const (
+	SIDE_BUY  string = "buy"
+	SIDE_SELL string = "sell"
+)

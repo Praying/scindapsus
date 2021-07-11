@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-const (
-	SIDE_BUY  string = "buy"
-	SIDE_SELL string = "sell"
-)
-
 /*
 
 copy from ccxt

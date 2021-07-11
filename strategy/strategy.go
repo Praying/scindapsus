@@ -138,8 +138,8 @@ func (strategy *SpotGridMartinStrategy) OnTicker(tickerData bd.TickerData) {
 }
 
 func (strategy *SpotGridMartinStrategy) Buy(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_BUY, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_BUY, volume, price, nil)
 }
 func (strategy *SpotGridMartinStrategy) Sell(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_SELL, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_SELL, volume, price, nil)
 }
