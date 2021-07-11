@@ -3,8 +3,8 @@ package strategy
 import (
 	log "github.com/sirupsen/logrus"
 	bd "scindapsus/basedata"
-	"scindapsus/config"
 	"scindapsus/exchanges"
+	"scindapsus/exchanges/okex"
 	"strings"
 	"time"
 )
@@ -15,7 +15,7 @@ type AbstractStrategy interface {
 	OnTrade(tradeData bd.TradeData)
 	OnPosition(positionData bd.PositionData)
 	OnBalAndPos(balAndPosData bd.BalAndPosData)
-	Init(apiConfig *config.APIConfig)
+	Init(exchange exchanges.Exchange)
 	Name() string
 	IsInited() bool
 	OnStart()
@@ -31,7 +31,7 @@ type SpotGridMartinStrategy struct {
 	balance float64
 	//持仓，ETH
 	position float64
-
+	//交易对
 	ssymbol string
 
 	//策略名称
@@ -96,26 +96,11 @@ func (strategy *SpotGridMartinStrategy) Name() string {
 //TODO 策略应该持有Exchange的引用
 func (strategy *SpotGridMartinStrategy) Init(exchange exchanges.Exchange) {
 	strategy.Exchange = exchange
-	strategy.Exchange.WatchTicker("ETH-USDT", "", nil)
+	strategy.Exchange.WatchTicker(strategy.ssymbol, "", nil)
 	strategy.Exchange.WatchBalance(nil)
 	strategy.Exchange.WatchOrders("ETH-USDT", "", "", nil)
+	//strategy.Exchange.WatchTrades(strategy.ssymbol,"","",nil)
 	strategy.Inited = true
-	/*
-		strategy.pubWS = okex.NewOKExWSClient(okex.TEST_PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
-		strategy.pubWS.ConnectWS()
-		strategy.privWS = okex.NewOKExWSClient(okex.TEST_PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
-		strategy.privWS.ConnectWS()
-
-		symbols := []string{"ETH-USDT"}
-		strategy.privWS.Login(apiConfig)
-		time.Sleep(1 * time.Second)
-		strategy.pubWS.WatchTicker(symbols)
-		strategy.privWS.WatchBalAndPos()
-		strategy.privWS.WatchOrders(okex.MARGIN, symbols[0])
-		strategy.pubWS.WatchDepth(symbols)
-		strategy.Inited = true
-	*/
-
 	log.Infof("[%s] inited", strategy.StName)
 }
 
@@ -124,9 +109,13 @@ func (strategy *SpotGridMartinStrategy) Symbol() string {
 }
 
 func (strategy *SpotGridMartinStrategy) OnTrade(tradeData bd.TradeData) {
-	if tradeData.Direction == bd.Direction_LONG {
 
+	if tradeData.Direction == bd.Direction_LONG {
+		strategy.position += tradeData.Volume
+	} else if tradeData.Direction == bd.Direction_LONG {
+		strategy.position -= tradeData.Volume
 	}
+	log.Infof("position: %f", strategy.position)
 	return
 }
 
@@ -139,12 +128,18 @@ func (strategy *SpotGridMartinStrategy) OnTicker(tickerData bd.TickerData) {
 	lastPrice := tickerData.Last
 	if lastPrice > 2000 && strategy.position > 0 {
 		//卖出
-		//strategy.privWS.WatchCreateOrder(strategy.ssymbol, "limit", "sell", strategy.position, lastPrice)
+		strategy.Buy(strategy.ssymbol, lastPrice, 0.01)
 		log.Infof("[%s] sell %s on price:%f, volume:%f", strategy.Name(), strategy.ssymbol, lastPrice, strategy.position)
 	} else if strategy.position == 0 {
 		//买入
-		//strategy.privWS.WatchCreateOrder(strategy.ssymbol, "limit", "buy", 0.2, lastPrice)
+		strategy.Sell(strategy.ssymbol, lastPrice, 0.01)
 		log.Infof("[%s] buy %s on price:%f, volume:%f", strategy.Name(), strategy.ssymbol, lastPrice, 0.2)
 	}
-	//
+}
+
+func (strategy *SpotGridMartinStrategy) Buy(symbol string, price, volume float64) {
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_BUY, volume, price, nil)
+}
+func (strategy *SpotGridMartinStrategy) Sell(symbol string, price, volume float64) {
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_SELL, volume, price, nil)
 }

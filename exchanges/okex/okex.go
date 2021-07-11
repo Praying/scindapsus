@@ -21,18 +21,43 @@ import (
 /*
 产品类型
 SPOT：币币
-MARGIN：币币杠杆
+INST_MARGIN：币币杠杆
 SWAP：永续合约
 FUTURES：交割合约
 OPTION：期权
 ANY：全部
 */
 const (
-	MARGIN  string = "MARGIN"  //币币
-	SWAP    string = "SWAP"    //永续合约
-	FUTURES string = "FUTURES" //交割合约
-	OPTION  string = "OPTION"  //期权
-	ANY     string = "ANY"     //全部
+	INST_SPOT    string = "SPOT"        //币币
+	INST_MARGIN  string = "INST_MARGIN" //币币杠杆
+	INST_SWAP    string = "SWAP"        //永续合约
+	INST_FUTURES string = "FUTURES"     //交割合约
+	INST_OPTION  string = "OPTION"      //期权
+	INST_ANY     string = "ANY"         //全部
+
+	/*
+		交易模式
+		保证金模式 isolated：逐仓 cross： 全仓
+		非保证金模式 cash：现金
+	*/
+	TRADE_MODEL_ISOLATED string = "isolated"
+	TRADE_MODEL_CROSS    string = "cross"
+	TRADE_MODEL_CASH     string = "cash"
+	/*
+		订单类型
+		market：市价单
+		limit：限价单
+		post_only：只做maker单
+		fok：全部成交或立即取消
+		ioc：立即成交并取消剩余
+		optimal_limit_ioc：市价委托立即成交并取消剩余（仅适用交割、永续）
+	*/
+	OKEX_OT_MARKET            string = "market"
+	OKEX_OT_LIMIT             string = "limit"
+	OKEX_OT_POST_ONLY         string = "post_only"
+	OKEX_OT_FOK               string = "fok"
+	OKEX_OT_IOC               string = "ioc"
+	OKEX_OT_OPTIMAL_LIMIT_IOC string = "optimal_limit_ioc"
 )
 
 const (
@@ -116,13 +141,8 @@ func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, a
 		ClOrderID string `json:"clOrdId"`
 		Side      string `json:"side"`
 		InstID    string `json:"instId"`
-		/*
-			交易模式
-			保证金模式 isolated：逐仓 cross： 全仓
-			非保证金模式 cash：现金
-		*/
-		TdMode  string `json:"tdMode"`
-		OrdType string `json:"ordType"`
+		TdMode    string `json:"tdMode"`
+		OrdType   string `json:"ordType"`
 		/*
 			当type为limit时，表示买入或卖出的数量
 			当type为market时，现货交易买入时，表示买入的总金额，而
@@ -130,7 +150,7 @@ func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, a
 		*/
 		Sz string `json:"sz"`
 		Px string `json:"px"`
-	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: "cash", OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
+	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: TRADE_MODEL_CASH, OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
 	data, err := json.Marshal(orderParam)
 	if err != nil {
 		log.Errorf("[ws][%s] json encode orderParam error , %s", wsClient.WSConn.WsUrl, err)
@@ -200,7 +220,7 @@ func (wsClient *OKExWSClient) UnWatchTicker(currencyPairs []string) error {
 //订阅持仓
 /*
 	产品类型
-MARGIN：币币杠杆
+INST_MARGIN：币币杠杆
 SWAP：永续合约
 FUTURES：交割合约
 OPTION：期权

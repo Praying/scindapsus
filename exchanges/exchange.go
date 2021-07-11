@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	SIDE_BUY  string = "buy"
+	SIDE_SELL string = "sell"
+)
+
 /*
 
 copy from ccxt
@@ -66,7 +71,7 @@ func (Ok *OKExchange) WatchBalance(params interface{}) {
 }
 
 func (Ok *OKExchange) WatchOrders(symbol string, since string, limit string, params interface{}) {
-	Ok.privateWS.WatchOrders(okex.MARGIN, symbol)
+	Ok.privateWS.WatchOrders(okex.INST_SPOT, symbol)
 }
 
 func (Ok *OKExchange) WatchCreateOrder(symbol, rtype, side string, amount, price float64, params interface{}) {
@@ -84,7 +89,7 @@ func (Ok *OKExchange) WatchMyTrades(symbol, since, limit, params interface{}) {
 }
 
 func (Ok *OKExchange) WatchPosition(symbol string) {
-	Ok.privateWS.WatchPosition(okex.MARGIN, symbol)
+	Ok.privateWS.WatchPosition(okex.INST_SPOT, symbol)
 }
 
 type OKExchange struct {
@@ -110,4 +115,5 @@ func (Ok *OKExchange) Init() {
 	apiConfig := config.GetConfigEngine().ReadConfig()
 	Ok.privateWS.Login(apiConfig)
 	Ok.ConnectTime = time.Now().Unix()
+	time.Sleep(4 * time.Second)
 }

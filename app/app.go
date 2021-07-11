@@ -45,7 +45,7 @@ func (this *AppBuilder) Init() {
 		strategy.GetStrategyEngine().ProcessBalAndPosData(balAndPosData)
 	})
 	event.GetEventEngine().Init()
-	strategy.GetStrategyEngine().Init()
+	strategy.GetStrategyEngine().Init(this.Exchange)
 }
 
 func (this *AppBuilder) Run() {

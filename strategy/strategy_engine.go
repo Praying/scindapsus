@@ -3,7 +3,7 @@ package strategy
 import (
 	log "github.com/sirupsen/logrus"
 	bd "scindapsus/basedata"
-	"scindapsus/config"
+	"scindapsus/exchanges"
 	"sync"
 )
 
@@ -29,11 +29,11 @@ func NewStrategyEngine() *StrategyEngine {
 	}
 }
 
-func (this *StrategyEngine) Init() {
+func (this *StrategyEngine) Init(exchange exchanges.Exchange) {
 	this.LoadStrategy()
 	this.LoadStrategySetting()
 	this.LoadStrategyData()
-	this.InitAllStrategies()
+	this.InitAllStrategies(exchange)
 	log.Info("StrategyEngine init successfully")
 
 }
@@ -56,15 +56,14 @@ func (this *StrategyEngine) addStrategy(strategy AbstractStrategy) {
 	}
 	this.SymbolStrategyMap[(strategy).Symbol()] = append(this.SymbolStrategyMap[strategy.Symbol()], strategy)
 }
-func (this *StrategyEngine) InitAllStrategies() {
-	apiConfig := config.GetConfigEngine().ReadConfig()
+func (this *StrategyEngine) InitAllStrategies(exchange exchanges.Exchange) {
 	for _, strategy := range this.Strategies {
 		go func(strategy AbstractStrategy) {
 			if strategy.IsInited() {
 				log.Info("[%s] has been inited", strategy.Name())
 				return
 			}
-			strategy.Init(apiConfig)
+			strategy.Init(exchange)
 			//数据可能需要恢复
 			//行情订阅
 		}(strategy)

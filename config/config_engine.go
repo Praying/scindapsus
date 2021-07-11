@@ -37,7 +37,7 @@ func GetConfigEngine() *ConfigEngine {
 
 func (configEngine *ConfigEngine) ReadConfig() *APIConfig {
 	//curPath, _ := os.Getwd()
-	viper.SetConfigFile("D:\\quant\\scindapsus\\config\\api.json")
+	viper.SetConfigFile("/Users/ran/SourceCode/quant/scindapsus/config/api.json")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Errorf("[config] parse config file failed:%s", err.Error())
 		return nil
