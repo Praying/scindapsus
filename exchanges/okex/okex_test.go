@@ -109,7 +109,7 @@ func TestSubscribeBalAndPos(t *testing.T) {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(2 * time.Second)
-	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_SELL, 0.01, 2400, ""); err != nil {
+	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, ""); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(2 * time.Second)
@@ -127,16 +127,16 @@ func TestOKExWSClient_WatchOrders(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	ts := time.Now().Unix()
 	clOrdID := util.GenerateClOrdId(ts, 1)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 2)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 3)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 4)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 
 }

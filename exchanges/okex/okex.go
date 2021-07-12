@@ -67,20 +67,6 @@ const (
 
 type APIConfig = config.APIConfig
 
-/*
-const REST_HOST_CHINA: &str = "https://www.okex.win";
-const PUBLIC_WEBSOCKET_HOST_CHINA: &str = "wss://wspri.coinall.ltd:8443/ws/v5/public";
-const PRIVATE_WEBSOCKET_HOST_CHINA: &str = "wss://wspri.coinall.ltd:8443/ws/v5/private";
-
-const REST_HOST: &str = "https://www.okex.com";
-const PUBLIC_WEBSOCKET_HOST: &str = "wss://ws.okex.com:8443/ws/v5/public";
-const PRIVATE_WEBSOCKET_HOST: &str = "wss://ws.okex.com:8443/ws/v5/private";
-
-const TEST_PUBLIC_WEBSOCKET_HOST: &str = "wss://wspri.coinall.ltd:8443/ws/v5/public?brokerId=9999";
-const TEST_PRIVATE_WEBSOCKET_HOST: &str =
-    "wss://wspri.coinall.ltd:8443/ws/v5/private?brokerId=9999";
-*/
-
 const REST_HOST_CHINA string = "https://www.ouyi.cc"
 const PUBLIC_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/public"
 const PRIVATE_WEBSOCKET_HOST_CHINA string = "wss://wspri.coinall.ltd:8443/ws/v5/private"
@@ -202,7 +188,7 @@ func (wsClient *OKExWSClient) doTicker(op string, currencyPairs []string) error 
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
 			InstID  string `json:"instId"`
-		}{"tickers", currencyPair})
+		}{FUNDING_RATE_CHANNEL, currencyPair})
 	}
 	wsClient.WSConn.Subscribe(subParam)
 	return nil
@@ -342,6 +328,25 @@ func (wsClient *OKExWSClient) WatchTrades(symbol string) error {
 
 func (wsClient *OKExWSClient) UnWatchTrades(symbol string) error {
 	return wsClient.doTrades(WS_UNSUBSCRIBE, symbol)
+}
+
+func (wsClient *OKExWSClient) doFundingRate(op string, symbol string) error {
+	var fundingRateParam FundingRateParam
+	fundingRateParam.Op = op
+	fundingRateParam.Args = append(fundingRateParam.Args, struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	}{Channel: "funding-rate", InstID: symbol})
+	wsClient.WSConn.Subscribe(fundingRateParam)
+	return nil
+}
+
+func (wsClient *OKExWSClient) WatchFundingRate(symbol string) error {
+	return wsClient.doFundingRate(WS_SUBSCRIBE, symbol)
+}
+
+func (wsClient *OKExWSClient) UnWatchFundingRate(symbol string) error {
+	return wsClient.doFundingRate(WS_UNSUBSCRIBE, symbol)
 }
 
 type OKExRestClient struct {

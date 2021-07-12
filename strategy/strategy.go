@@ -96,7 +96,7 @@ func (strategy *SpotGridMartinStrategy) Name() string {
 //TODO 策略应该持有Exchange的引用
 func (strategy *SpotGridMartinStrategy) Init(exchange exchanges.Exchange) {
 	strategy.Exchange = exchange
-	strategy.Exchange.WatchTicker(strategy.ssymbol, "", nil)
+	strategy.Exchange.WatchTicker(strategy.ssymbol)
 	strategy.Exchange.WatchBalance(nil)
 	strategy.Exchange.WatchOrders("ETH-USDT", "", "", nil)
 	//strategy.Exchange.WatchTrades(strategy.ssymbol,"","",nil)

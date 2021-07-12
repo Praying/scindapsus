@@ -10,7 +10,7 @@ import (
 
 func OkexRespHandler(channel string, data json.RawMessage) error {
 	switch channel {
-	case "tickers":
+	case TICKER_CHANNEL:
 		tickerData := parseTickerData(data)
 		event.GetEventEngine().TickerChan <- *tickerData
 		return nil
@@ -45,6 +45,12 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 		log.Info(data)
 		balAndPosData := parseBalAndPosData(data)
 		event.GetEventEngine().BalAndPosChan <- *balAndPosData
+		return nil
+	case FUNDING_RATE_CHANNEL:
+		fundingRateData := parseFundingRate(data)
+		if fundingRateData != nil {
+			log.Infof("Funding rate: %f, next funding rate: %f, time: %s", fundingRateData.FundingRate, fundingRateData.NextFundingRate, fundingRateData.FundingTime.String())
+		}
 		return nil
 	default:
 		return nil

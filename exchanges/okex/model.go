@@ -263,3 +263,27 @@ type OrdersInfo struct {
 		Msg             string `json:"msg"`
 	} `json:"data"`
 }
+
+//资金费率订阅参数
+type FundingRateParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	} `json:"args"`
+}
+
+//资金费率推送数据
+type FundingRateInfo struct {
+	Arg struct {
+		Channel string `json:"channel"`
+		InstID  string `json:"instId"`
+	} `json:"arg"`
+	Data []struct {
+		InstType        string `json:"instType"`
+		InstID          string `json:"instId"`
+		FundingRate     string `json:"fundingRate"`
+		NextFundingRate string `json:"nextFundingRate"`
+		FundingTime     string `json:"fundingTime"`
+	} `json:"data"`
+}

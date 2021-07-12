@@ -25,10 +25,12 @@ watchMyTrades (symbol, since, limit, params) wip
 type Exchange interface {
 	//公共频道方法
 	WatchOrderBook(symbol string, limit string, params interface{})
-	WatchTicker(symbol string, limit string, params interface{})
+	WatchTicker(symbol string)
 	WatchTickers(symbols []string, params interface{})
 	WatchOHLCV(symbol string, timeframe string, since string, limit string, params interface{})
 	WatchTrades(symbol, since string, limit string, params interface{})
+	//订阅资金费率
+	WatchFundingRate(symbol string)
 	//私有频道方法
 	WatchBalance(params interface{})
 	WatchOrders(symbol string, since string, limit string, params interface{})
@@ -40,11 +42,15 @@ type Exchange interface {
 	Init()
 }
 
+func (Ok *OKExchange) WatchFundingRate(symbol string) {
+	Ok.publicWS.WatchFundingRate(symbol)
+}
+
 func (Ok *OKExchange) WatchOrderBook(symbol string, limit string, params interface{}) {
 	Ok.publicWS.WatchDepth([]string{symbol})
 }
 
-func (Ok *OKExchange) WatchTicker(symbol string, limit string, params interface{}) {
+func (Ok *OKExchange) WatchTicker(symbol string) {
 	Ok.publicWS.WatchTicker([]string{symbol})
 }
 
@@ -93,18 +99,30 @@ type OKExchange struct {
 	//生成订单的方式为 建立连接的时间+OrderCount
 	OrderCount  int64
 	ConnectTime int64
+	//是否是实盘
+	Real bool
 }
 
 func NewOKExchange() *OKExchange {
 	return &OKExchange{
 		OrderCount: 0,
+		Real:       false,
 	}
 }
 
 func (Ok *OKExchange) Init() {
-	Ok.publicWS = okex.NewOKExWSClient(okex.TEST_PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
+	if Ok.Real {
+		Ok.publicWS = okex.NewOKExWSClient(okex.PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
+	} else {
+		Ok.publicWS = okex.NewOKExWSClient(okex.TEST_PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
+	}
 	Ok.publicWS.ConnectWS()
-	Ok.privateWS = okex.NewOKExWSClient(okex.TEST_PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
+	if Ok.Real {
+		Ok.privateWS = okex.NewOKExWSClient(okex.PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
+	} else {
+		Ok.privateWS = okex.NewOKExWSClient(okex.TEST_PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
+	}
+
 	Ok.privateWS.ConnectWS()
 	//登录
 	apiConfig := config.GetConfigEngine().ReadConfig()

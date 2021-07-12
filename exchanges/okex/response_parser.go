@@ -221,6 +221,26 @@ func parseOrdersInfo(data []byte) (*bd.OrderData, *bd.TradeData) {
 	return nil, nil
 }
 
+func parseFundingRate(data []byte) *bd.FundingRateData {
+	var fundingRateInfo FundingRateInfo
+	if err := json.Unmarshal(data, &fundingRateInfo); err != nil {
+		log.Errorf("error: %s, Unmarshal data: %s to FundingRateInfo failed", err.Error(), data)
+		return nil
+	}
+	if len(fundingRateInfo.Data) > 0 {
+		for _, item := range fundingRateInfo.Data {
+			ts, _ := strconv.ParseInt(item.FundingTime, 10, 64)
+			fundingRateData := &bd.FundingRateData{
+				FundingRate:     stringTof64(item.FundingRate),
+				NextFundingRate: stringTof64(item.NextFundingRate),
+				FundingTime:     time.Unix(ts/1000, (ts%1000)*1000000),
+			}
+			return fundingRateData
+		}
+	}
+	return nil
+}
+
 //@param 传入的timestamp是13位的时间戳
 func parseTime(timestamp string) time.Time {
 	//s:="1597026383085"
