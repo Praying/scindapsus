@@ -222,3 +222,14 @@ type BalAndPosData struct {
 	BalMap      map[string]float64
 	PositionMap map[string]float64
 }
+
+type FundingRateData struct {
+	FundingRate     float64
+	NextFundingRate float64
+	FundingTime     time.Time
+}
+
+const (
+	SIDE_BUY  string = "buy"
+	SIDE_SELL string = "sell"
+)

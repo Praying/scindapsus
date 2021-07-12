@@ -3,6 +3,7 @@ package okex
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	bd "scindapsus/basedata"
 	"scindapsus/event"
 	"scindapsus/util"
 	"testing"
@@ -69,7 +70,7 @@ func TestPrivateWS(t *testing.T) {
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
 	//订阅持仓信息
-	privateWS.WatchPosition("INST_MARGIN", "SHIB-USDT")
+	privateWS.WatchPosition(INST_SPOT, "SHIB-USDT")
 	time.Sleep(5 * time.Second)
 }
 
@@ -83,7 +84,7 @@ func TestSendLimitOrder(t *testing.T) {
 	//订阅订单信息
 
 	//下单
-	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400, ""); err != nil {
+	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, ""); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(5 * time.Second)
@@ -104,11 +105,11 @@ func TestSubscribeBalAndPos(t *testing.T) {
 	privateWS.WatchPosition("INST_MARGIN", "ETH-USDT")
 	time.Sleep(5 * time.Second)
 	//下单
-	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400, ""); err != nil {
+	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, ""); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(2 * time.Second)
-	if err := privateWS.WatchCreateOrder("ETH-USDT", "limit", "buy", 0.01, 2400, ""); err != nil {
+	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, ""); err != nil {
 		log.Errorln(err.Error())
 	}
 	time.Sleep(2 * time.Second)
@@ -126,16 +127,16 @@ func TestOKExWSClient_WatchOrders(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	ts := time.Now().Unix()
 	clOrdID := util.GenerateClOrdId(ts, 1)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 2)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 3)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 	clOrdID = util.GenerateClOrdId(ts, 4)
-	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, "buy", 0.2, 2050, clOrdID)
+	privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.2, 2050, clOrdID)
 	time.Sleep(2 * time.Second)
 
 }

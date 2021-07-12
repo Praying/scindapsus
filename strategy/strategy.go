@@ -96,7 +96,7 @@ func (strategy *SpotGridMartinStrategy) Name() string {
 //TODO 策略应该持有Exchange的引用
 func (strategy *SpotGridMartinStrategy) Init(exchange exchanges.Exchange) {
 	strategy.Exchange = exchange
-	strategy.Exchange.WatchTicker(strategy.ssymbol, "", nil)
+	strategy.Exchange.WatchTicker(strategy.ssymbol)
 	strategy.Exchange.WatchBalance(nil)
 	strategy.Exchange.WatchOrders("ETH-USDT", "", "", nil)
 	//strategy.Exchange.WatchTrades(strategy.ssymbol,"","",nil)
@@ -138,8 +138,8 @@ func (strategy *SpotGridMartinStrategy) OnTicker(tickerData bd.TickerData) {
 }
 
 func (strategy *SpotGridMartinStrategy) Buy(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_BUY, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_BUY, volume, price, nil)
 }
 func (strategy *SpotGridMartinStrategy) Sell(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, exchanges.SIDE_SELL, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_SELL, volume, price, nil)
 }
