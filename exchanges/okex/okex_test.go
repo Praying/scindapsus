@@ -102,7 +102,7 @@ func TestSubscribeBalAndPos(t *testing.T) {
 	if err := privateWS.WatchBalAndPos(); err != nil {
 		log.Errorln(err.Error())
 	}
-	privateWS.WatchPosition("INST_MARGIN", "ETH-USDT")
+	privateWS.WatchPosition(INST_SPOT, "ETH-USDT")
 	time.Sleep(5 * time.Second)
 	//下单
 	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, ""); err != nil {

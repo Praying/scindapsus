@@ -14,25 +14,25 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 		tickerData := parseTickerData(data)
 		event.GetEventEngine().TickerChan <- *tickerData
 		return nil
-	case "books":
+	case BOOKS_CHANNEL:
 		fallthrough
-	case "books5":
+	case BOOKS5_CHANNEL:
 		fallthrough
-	case "books-l2-tbt":
+	case BOOKS_L2_TBT_CHANNEL:
 		fallthrough
-	case "books50-l2-tbt":
+	case BOOKS50_L2_TBT_CHANNEL:
 		bookData := parseBookData(data)
 		event.GetEventEngine().BookChan <- *bookData
 		return nil
-	case "position":
+	case POSITIONS_CHANNEL:
 		positionData := parsePositionData(data)
 		event.GetEventEngine().PositionChan <- *positionData
 		return nil
-	case "order":
+	case ORDER_CHANNEL:
 		orderData := parseOrderData(data)
 		event.GetEventEngine().OrderChan <- *orderData
 		return nil
-	case "orders":
+	case ORDERS_CHANNEL:
 		orderData, tradeData := parseOrdersInfo(data)
 		if orderData != nil {
 			event.GetEventEngine().OrderChan <- *orderData
@@ -41,7 +41,7 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 			event.GetEventEngine().TradeChan <- *tradeData
 		}
 		return nil
-	case "balance_and_position":
+	case BAL_AND_POS_CHANNEL:
 		log.Info(data)
 		balAndPosData := parseBalAndPosData(data)
 		event.GetEventEngine().BalAndPosChan <- *balAndPosData

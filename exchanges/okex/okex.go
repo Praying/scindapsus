@@ -119,7 +119,7 @@ func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, a
 	orderId := fmt.Sprintf("%d", 1)
 	orderParam := &OrderParam{
 		ID:   orderId,
-		Op:   "order",
+		Op:   ORDER_CHANNEL,
 		Args: nil,
 	}
 
@@ -129,13 +129,8 @@ func (wsClient *OKExWSClient) WatchCreateOrder(symbol, orderType, side string, a
 		InstID    string `json:"instId"`
 		TdMode    string `json:"tdMode"`
 		OrdType   string `json:"ordType"`
-		/*
-			当type为limit时，表示买入或卖出的数量
-			当type为market时，现货交易买入时，表示买入的总金额，而
-			当其他产品买入或卖出时，表示数量
-		*/
-		Sz string `json:"sz"`
-		Px string `json:"px"`
+		Sz        string `json:"sz"`
+		Px        string `json:"px"`
 	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: TRADE_MODEL_CASH, OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
 	data, err := json.Marshal(orderParam)
 	if err != nil {
@@ -204,14 +199,6 @@ func (wsClient *OKExWSClient) UnWatchTicker(currencyPairs []string) error {
 }
 
 //订阅持仓
-/*
-	产品类型
-INST_MARGIN：币币杠杆
-SWAP：永续合约
-FUTURES：交割合约
-OPTION：期权
-ANY：全部
-*/
 func (wsClient *OKExWSClient) doPosition(op string, instType string, instID string) error {
 	var positionParam PositionParam
 	positionParam.Op = op
@@ -220,7 +207,7 @@ func (wsClient *OKExWSClient) doPosition(op string, instType string, instID stri
 		InstType string `json:"instType"` //必填
 		Uly      string `json:"uly"`
 		InstID   string `json:"instId"`
-	}{Channel: "positions", InstType: instType, Uly: "", InstID: instID})
+	}{Channel: POSITIONS_CHANNEL, InstType: instType, Uly: "", InstID: instID})
 	wsClient.WSConn.Subscribe(positionParam)
 	return nil
 }
@@ -240,7 +227,7 @@ func (wsClient *OKExWSClient) doDepth(op string, currencyPairs []string) error {
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
 			InstID  string `json:"instId"`
-		}{"books", currencyPair})
+		}{BOOKS5_CHANNEL, currencyPair})
 	}
 	wsClient.WSConn.Subscribe(subParam)
 	return nil
@@ -258,7 +245,7 @@ func (wsClient *OKExWSClient) doBalAndPos(op string) error {
 	param.Op = op
 	param.Args = append(param.Args, struct {
 		Channel string `json:"channel"`
-	}{Channel: "balance_and_position"})
+	}{Channel: BAL_AND_POS_CHANNEL})
 	wsClient.WSConn.Subscribe(param)
 	return nil
 }
@@ -298,7 +285,7 @@ func (wsClient *OKExWSClient) doOrders(op string, instType string, symbol string
 		InstType string `json:"instType"`
 		Uly      string `json:"uly"`
 		InstID   string `json:"instId"`
-	}{Channel: "orders", InstType: instType, Uly: "", InstID: symbol})
+	}{Channel: ORDER_CHANNEL, InstType: instType, Uly: "", InstID: symbol})
 	wsClient.WSConn.Subscribe(orderChParam)
 	return nil
 }
@@ -317,7 +304,7 @@ func (wsClient *OKExWSClient) doTrades(op string, symbol string) error {
 	tradesParam.Args = append(tradesParam.Args, struct {
 		Channel string `json:"channel"`
 		InstID  string `json:"instId"`
-	}{Channel: "trades", InstID: symbol})
+	}{Channel: TRADES_CHANNEL, InstID: symbol})
 	wsClient.WSConn.Subscribe(tradesParam)
 	return nil
 }
@@ -336,7 +323,7 @@ func (wsClient *OKExWSClient) doFundingRate(op string, symbol string) error {
 	fundingRateParam.Args = append(fundingRateParam.Args, struct {
 		Channel string `json:"channel"`
 		InstID  string `json:"instId"`
-	}{Channel: "funding-rate", InstID: symbol})
+	}{Channel: FUNDING_RATE_CHANNEL, InstID: symbol})
 	wsClient.WSConn.Subscribe(fundingRateParam)
 	return nil
 }
