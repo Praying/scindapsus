@@ -21,7 +21,7 @@ func TestQiXianTaoLi(t *testing.T) {
 	//现货就是ETH-USDT,永续就是ETH-USDT-SWAP
 	exchange.Init()
 	exchange.WatchTicker("ETH-USDT")
-	exchange.WatchTicker("ETH-USDT-SWAP")
+	exchange.WatchTicker("ETH-USD-SWAP")
 
 	time.Sleep(10 * time.Second)
 }

@@ -97,7 +97,7 @@ func (wsClient *PrivateWSClient) doBalAndPos(op string) error {
 	param.Op = op
 	param.Args = append(param.Args, struct {
 		Channel string `json:"channel"`
-	}{Channel: "balance_and_position"})
+	}{Channel: BAL_AND_POS_CHANNEL})
 	wsClient.WSConn.Subscribe(param)
 	return nil
 }
@@ -127,7 +127,7 @@ func (wsClient *PrivateWSClient) doPosition(op string, instType string, instID s
 		InstType string `json:"instType"` //必填
 		Uly      string `json:"uly"`
 		InstID   string `json:"instId"`
-	}{Channel: "positions", InstType: instType, Uly: "", InstID: instID})
+	}{Channel: POSITIONS_CHANNEL, InstType: instType, Uly: "", InstID: instID})
 	wsClient.WSConn.Subscribe(positionParam)
 	return nil
 }
@@ -150,7 +150,7 @@ func (wsClient *PrivateWSClient) doOrders(op string, instType string, symbol str
 		InstType string `json:"instType"`
 		Uly      string `json:"uly"`
 		InstID   string `json:"instId"`
-	}{Channel: "orders", InstType: instType, Uly: "", InstID: symbol})
+	}{Channel: ORDERS_CHANNEL, InstType: instType, Uly: "", InstID: symbol})
 	wsClient.WSConn.Subscribe(orderChParam)
 	return nil
 }

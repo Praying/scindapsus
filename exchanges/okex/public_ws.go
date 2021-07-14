@@ -44,7 +44,7 @@ func (wsClient *PublicWSClient) doTrades(op string, symbol string) error {
 	tradesParam.Args = append(tradesParam.Args, struct {
 		Channel string `json:"channel"`
 		InstID  string `json:"instId"`
-	}{Channel: "trades", InstID: symbol})
+	}{Channel: TRADES_CHANNEL, InstID: symbol})
 	wsClient.WSConn.Subscribe(tradesParam)
 	return nil
 }
@@ -70,7 +70,7 @@ func (wsClient *PublicWSClient) doDepth(op string, currencyPairs []string) error
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
 			InstID  string `json:"instId"`
-		}{"books", currencyPair})
+		}{BOOKS5_CHANNEL, currencyPair})
 	}
 	wsClient.WSConn.Subscribe(subParam)
 	return nil
