@@ -112,15 +112,15 @@ func NewOKExchange() *OKExchange {
 
 func (Ok *OKExchange) Init() {
 	if Ok.Real {
-		Ok.publicWS = okex.NewOKExWSClient(okex.PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
+		Ok.publicWS = okex.NewPublicWSClient(okex.PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
 	} else {
-		Ok.publicWS = okex.NewOKExWSClient(okex.TEST_PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
+		Ok.publicWS = okex.NewPublicWSClient(okex.TEST_PUBLIC_WEBSOCKET_HOST, okex.OkexRespHandler)
 	}
 	Ok.publicWS.ConnectWS()
 	if Ok.Real {
-		Ok.privateWS = okex.NewOKExWSClient(okex.PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
+		Ok.privateWS = okex.NewPrivateWSClient(okex.PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
 	} else {
-		Ok.privateWS = okex.NewOKExWSClient(okex.TEST_PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
+		Ok.privateWS = okex.NewPrivateWSClient(okex.TEST_PRIVATE_WEBSOCKET_HOST, okex.OkexRespHandler)
 	}
 
 	Ok.privateWS.ConnectWS()
