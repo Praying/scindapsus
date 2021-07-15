@@ -287,3 +287,40 @@ type FundingRateInfo struct {
 		FundingTime     string `json:"fundingTime"`
 	} `json:"data"`
 }
+
+type InstrumentParam struct {
+	Op   string `json:"op"`
+	Args []struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+	} `json:"args"`
+}
+
+type InstrumentsResp struct {
+	Arg struct {
+		Channel  string `json:"channel"`
+		InstType string `json:"instType"`
+	} `json:"arg"`
+	Data []struct {
+		InstType  string `json:"instType"`
+		InstID    string `json:"instId"`
+		Uly       string `json:"uly"`
+		Category  string `json:"category"`
+		BaseCcy   string `json:"baseCcy"`
+		QuoteCcy  string `json:"quoteCcy"`
+		SettleCcy string `json:"settleCcy"`
+		CtVal     string `json:"ctVal"`
+		CtMult    string `json:"ctMult"`
+		CtValCcy  string `json:"ctValCcy"`
+		OptType   string `json:"optType"`
+		Stk       string `json:"stk"`
+		ListTime  string `json:"listTime"`
+		ExpTime   string `json:"expTime"`
+		TickSz    string `json:"tickSz"`
+		LotSz     string `json:"lotSz"`
+		MinSz     string `json:"minSz"`
+		CtType    string `json:"ctType"`
+		Alias     string `json:"alias"`
+		State     string `json:"state"`
+	} `json:"data"`
+}

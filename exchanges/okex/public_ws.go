@@ -2,6 +2,25 @@ package okex
 
 type PublicWSClient = OKExWSClient
 
+func (wsClient *PublicWSClient) doInstrument(op string, instTypes []string) error {
+	var instrumentParam InstrumentParam
+	instrumentParam.Op = op
+	for _, instType := range instTypes {
+		instrumentParam.Args = append(instrumentParam.Args, struct {
+			Channel  string `json:"channel"`
+			InstType string `json:"instType"`
+		}{Channel: INSTRUMENTS_CHANNEL, InstType: instType})
+	}
+	wsClient.WSConn.Subscribe(instrumentParam)
+	return nil
+}
+func (wsClient *PublicWSClient) WatchInstrument(instTypes []string) error {
+	return wsClient.doInstrument(WS_SUBSCRIBE, instTypes)
+}
+func (wsClient *PublicWSClient) UnWatchInstrument(instTypes []string) error {
+	return wsClient.doInstrument(WS_UNSUBSCRIBE, instTypes)
+}
+
 //订阅行情Ticker数据
 func (wsClient *PublicWSClient) WatchTicker(currencyPairs []string) error {
 	return wsClient.doTicker(WS_SUBSCRIBE, currencyPairs)
@@ -56,7 +75,7 @@ func (wsClient *PublicWSClient) doTicker(op string, currencyPairs []string) erro
 		subParam.Args = append(subParam.Args, struct {
 			Channel string `json:"channel"`
 			InstID  string `json:"instId"`
-		}{FUNDING_RATE_CHANNEL, currencyPair})
+		}{TICKER_CHANNEL, currencyPair})
 	}
 	wsClient.WSConn.Subscribe(subParam)
 	return nil

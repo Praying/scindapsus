@@ -252,3 +252,19 @@ func parseTime(timestamp string) time.Time {
 	msec := data % 1000
 	return time.Unix(data/1000, msec*1000000)
 }
+
+func parseInstrument(data []byte) error {
+	var instrumentsResp InstrumentsResp
+	if err := json.Unmarshal(data, &instrumentsResp); err != nil {
+		log.Errorf("error: %s, Unmarshal data: %s to InstrumentsResp failed", err.Error(), data)
+		return nil
+	}
+	if instrumentsResp.Arg.InstType == INST_SWAP {
+		for _, item := range instrumentsResp.Data {
+			if item.InstID == "ETH-USD-SWAP" {
+				log.Infof("%+v\n", item)
+			}
+		}
+	}
+	return nil
+}

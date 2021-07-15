@@ -39,7 +39,8 @@ func (this *StrategyEngine) Init(exchange exchanges.Exchange) {
 }
 
 func (this *StrategyEngine) LoadStrategy() {
-	this.addStrategy(NewSpotGridMartinStrategy("ETH-USDT"))
+	//this.addStrategy(NewSpotGridMartinStrategy("ETH-USDT"))
+	this.addStrategy(NewFutureArbitrage([]string{"ETH-USDT", "ETH-USD-SWAP"}))
 }
 
 func (this *StrategyEngine) LoadStrategySetting() {
@@ -54,7 +55,10 @@ func (this *StrategyEngine) addStrategy(strategy AbstractStrategy) {
 		log.Info("add empty strategy")
 		return
 	}
-	this.SymbolStrategyMap[(strategy).Symbol()] = append(this.SymbolStrategyMap[strategy.Symbol()], strategy)
+	for _, symbol := range strategy.Symbols() {
+		this.SymbolStrategyMap[symbol] = append(this.SymbolStrategyMap[strategy.Symbol()], strategy)
+	}
+
 }
 func (this *StrategyEngine) InitAllStrategies(exchange exchanges.Exchange) {
 	for _, strategy := range this.Strategies {
@@ -102,7 +106,6 @@ func (this *StrategyEngine) ProcessTickerData(tickerData bd.TickerData) {
 			strategy.OnTicker(tickerData)
 		}
 	}
-	log.Infof("process ticker data:%s", tickerData.Symbol)
 }
 
 func (this *StrategyEngine) ProcessBarData(barData bd.BarData) {
@@ -126,7 +129,6 @@ func (this *StrategyEngine) ProcessPositionData(positionData bd.PositionData) {
 			strategy.OnPosition(positionData)
 		}
 	}
-	log.Info("process postion data")
 }
 
 func (this *StrategyEngine) ProcessBalAndPosData(balAndPosData bd.BalAndPosData) {

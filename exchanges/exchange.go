@@ -24,6 +24,7 @@ watchMyTrades (symbol, since, limit, params) wip
 */
 type Exchange interface {
 	//公共频道方法
+	WatchInstruments(insTypes []string)
 	WatchOrderBook(symbol string, limit string, params interface{})
 	WatchTicker(symbol string)
 	WatchTickers(symbols []string, params interface{})
@@ -34,7 +35,7 @@ type Exchange interface {
 	//私有频道方法
 	WatchBalance(params interface{})
 	WatchOrders(symbol string, since string, limit string, params interface{})
-	WatchCreateOrder(symbol, rtype, side string, amount, price float64, params interface{})
+	WatchCreateOrder(symbol, rtype, side string, amount, price float64, tradeMode string)
 	WatchCancelOrder(id, symbol string, params interface{})
 	WatchMyTrades(symbol, since, limit, params interface{})
 	WatchPosition(symbol string)
@@ -72,13 +73,13 @@ func (Ok *OKExchange) WatchBalance(params interface{}) {
 }
 
 func (Ok *OKExchange) WatchOrders(symbol string, since string, limit string, params interface{}) {
-	Ok.privateWS.WatchOrders(okex.INST_SPOT, symbol)
+	Ok.privateWS.WatchOrders(okex.INST_ANY, symbol)
 }
 
-func (Ok *OKExchange) WatchCreateOrder(symbol, rtype, side string, amount, price float64, params interface{}) {
+func (Ok *OKExchange) WatchCreateOrder(symbol, rtype, side string, amount, price float64, tradeMode string) {
 	clOrdId := util.GenerateClOrdId(Ok.ConnectTime, Ok.OrderCount)
 	Ok.OrderCount = Ok.OrderCount + 1
-	Ok.privateWS.WatchCreateOrder(symbol, rtype, side, amount, price, clOrdId)
+	Ok.privateWS.WatchCreateOrder(symbol, rtype, side, amount, price, clOrdId, tradeMode)
 }
 
 func (Ok *OKExchange) WatchCancelOrder(id, symbol string, params interface{}) {
@@ -90,7 +91,7 @@ func (Ok *OKExchange) WatchMyTrades(symbol, since, limit, params interface{}) {
 }
 
 func (Ok *OKExchange) WatchPosition(symbol string) {
-	Ok.privateWS.WatchPosition(okex.INST_SPOT, symbol)
+	Ok.privateWS.WatchPosition(okex.INST_ANY, symbol)
 }
 
 type OKExchange struct {
@@ -129,4 +130,8 @@ func (Ok *OKExchange) Init() {
 	Ok.privateWS.Login(apiConfig)
 	Ok.ConnectTime = time.Now().Unix()
 	time.Sleep(4 * time.Second)
+}
+
+func (Ok *OKExchange) WatchInstruments(insTypes []string) {
+	Ok.publicWS.WatchInstrument(insTypes)
 }

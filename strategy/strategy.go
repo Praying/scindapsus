@@ -11,6 +11,7 @@ import (
 
 type AbstractStrategy interface {
 	Symbol() string
+	Symbols() []string
 	OnTicker(tickerData bd.TickerData)
 	OnTrade(tradeData bd.TradeData)
 	OnPosition(positionData bd.PositionData)
@@ -48,6 +49,12 @@ func NewSpotGridMartinStrategy(symbol string) *SpotGridMartinStrategy {
 		ssymbol: symbol,
 		StName:  name,
 		Inited:  false,
+	}
+}
+
+func (strategy *SpotGridMartinStrategy) Symbols() []string {
+	return []string{
+		strategy.ssymbol,
 	}
 }
 
@@ -138,8 +145,8 @@ func (strategy *SpotGridMartinStrategy) OnTicker(tickerData bd.TickerData) {
 }
 
 func (strategy *SpotGridMartinStrategy) Buy(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_BUY, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_BUY, volume, price, okex.TRADE_MODEL_CASH)
 }
 func (strategy *SpotGridMartinStrategy) Sell(symbol string, price, volume float64) {
-	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_SELL, volume, price, nil)
+	strategy.Exchange.WatchCreateOrder(symbol, okex.OKEX_OT_LIMIT, bd.SIDE_SELL, volume, price, okex.TRADE_MODEL_CASH)
 }

@@ -26,11 +26,13 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 		return nil
 	case POSITIONS_CHANNEL:
 		positionData := parsePositionData(data)
-		event.GetEventEngine().PositionChan <- *positionData
+		if positionData != nil {
+			event.GetEventEngine().PositionChan <- *positionData
+		}
 		return nil
 	case ORDER_CHANNEL:
-		orderData := parseOrderData(data)
-		event.GetEventEngine().OrderChan <- *orderData
+		//orderData := parseOrderData(data)
+		//event.GetEventEngine().OrderChan <- *orderData
 		return nil
 	case ORDERS_CHANNEL:
 		orderData, tradeData := parseOrdersInfo(data)
@@ -52,6 +54,10 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 			log.Infof("Funding rate: %f, next funding rate: %f, time: %s", fundingRateData.FundingRate, fundingRateData.NextFundingRate, fundingRateData.FundingTime.String())
 		}
 		return nil
+	case INSTRUMENTS_CHANNEL:
+		//TODO 解析推送的数据
+		parseInstrument(data)
+		return nil
 	default:
 		return nil
 	}
@@ -59,7 +65,7 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 }
 
 func (wsClient *OKExWSClient) handle(msg []byte) error {
-	log.Info("[ws][response]", string(msg))
+	//log.Info("[ws][response]", string(msg))
 	if string(msg) == "pong" {
 		return nil
 	}

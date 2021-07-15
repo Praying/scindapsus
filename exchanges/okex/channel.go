@@ -1,7 +1,9 @@
 package okex
 
 const (
-	//行情频道
+	//公共产品频道
+	INSTRUMENTS_CHANNEL string = "instruments"
+	//公共行情频道
 	TICKER_CHANNEL string = "tickers"
 	//公共交易频道
 	TRADES_CHANNEL string = "trades"

@@ -11,7 +11,7 @@ import (
 
 type PrivateWSClient = OKExWSClient
 
-func (wsClient *PrivateWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64, clOrdID string) error {
+func (wsClient *PrivateWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64, clOrdID, tradeMode string) error {
 	//Symbol-时间戳-OrderType
 	//orderId := generateOrderID(symbol, orderType)
 	orderId := fmt.Sprintf("%d", 1)
@@ -34,7 +34,7 @@ func (wsClient *PrivateWSClient) WatchCreateOrder(symbol, orderType, side string
 		*/
 		Sz string `json:"sz"`
 		Px string `json:"px"`
-	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: TRADE_MODEL_CASH, OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
+	}{ClOrderID: clOrdID, Side: side, InstID: symbol, TdMode: tradeMode, OrdType: orderType, Sz: fmt.Sprintf("%f", amount), Px: fmt.Sprintf("%f", price)})
 	data, err := json.Marshal(orderParam)
 	if err != nil {
 		log.Errorf("[ws][%s] json encode orderParam error , %s", wsClient.WSConn.WsUrl, err)
