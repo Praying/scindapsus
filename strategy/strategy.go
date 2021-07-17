@@ -14,6 +14,7 @@ type AbstractStrategy interface {
 	Symbols() []string
 	OnTicker(tickerData bd.TickerData)
 	OnTrade(tradeData bd.TradeData)
+	OnOrders(orderData bd.OrderData)
 	OnPosition(positionData bd.PositionData)
 	OnBalAndPos(balAndPosData bd.BalAndPosData)
 	Init(exchange exchanges.Exchange)
@@ -22,6 +23,10 @@ type AbstractStrategy interface {
 	OnStart()
 	IsTrading() bool
 	OnStop()
+}
+
+func (strategy *SpotGridMartinStrategy) OnOrders(orderData bd.OrderData) {
+	panic("implement me")
 }
 
 //现货网格马丁策略
@@ -105,7 +110,7 @@ func (strategy *SpotGridMartinStrategy) Init(exchange exchanges.Exchange) {
 	strategy.Exchange = exchange
 	strategy.Exchange.WatchTicker(strategy.ssymbol)
 	strategy.Exchange.WatchBalance(nil)
-	strategy.Exchange.WatchOrders("ETH-USDT", "", "", nil)
+	strategy.Exchange.WatchOrders("ETH-USDT", okex.INST_SPOT)
 	//strategy.Exchange.WatchTrades(strategy.ssymbol,"","",nil)
 	strategy.Inited = true
 	log.Infof("[%s] inited", strategy.StName)

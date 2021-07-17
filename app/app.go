@@ -29,8 +29,8 @@ func (this *AppBuilder) Init() {
 	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_TICKER], func(tickerData bd.TickerData) {
 		strategy.GetStrategyEngine().ProcessTickerData(tickerData)
 	})
-	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_ORDER], func(orderData bd.OrderData) {
-		strategy.GetStrategyEngine().ProcessOrderData(orderData)
+	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_ORDERS], func(orderData bd.OrderData) {
+		strategy.GetStrategyEngine().ProcessOrdersData(orderData)
 	})
 	event.GetEventEngine().EventBus.Subscribe(event.Event2String[event.Event_TRADE], func(tradeData bd.TradeData) {
 		strategy.GetStrategyEngine().ProcessTradeData(tradeData)

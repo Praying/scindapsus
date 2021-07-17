@@ -81,6 +81,12 @@ type OKExWSClient struct {
 	respHandler func(channel string, data json.RawMessage) error
 }
 
+func CheckInstType(instType string) bool {
+	return instType == INST_SPOT || instType == INST_SWAP ||
+		instType == INST_FUTURES || instType == INST_MARGIN ||
+		instType == INST_ANY
+}
+
 func NewOKExWSClient(url string, respHandler func(channel string, data json.RawMessage) error) *OKExWSClient {
 	okexWSClient := &OKExWSClient{
 		once:        new(sync.Once),

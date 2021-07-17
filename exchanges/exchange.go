@@ -34,7 +34,7 @@ type Exchange interface {
 	WatchFundingRate(symbol string)
 	//私有频道方法
 	WatchBalance(params interface{})
-	WatchOrders(symbol string, since string, limit string, params interface{})
+	WatchOrders(symbol string, instType string)
 	WatchCreateOrder(symbol, rtype, side string, amount, price float64, tradeMode string)
 	WatchCancelOrder(id, symbol string, params interface{})
 	WatchMyTrades(symbol, since, limit, params interface{})
@@ -72,8 +72,13 @@ func (Ok *OKExchange) WatchBalance(params interface{}) {
 	Ok.privateWS.WatchBalAndPos()
 }
 
-func (Ok *OKExchange) WatchOrders(symbol string, since string, limit string, params interface{}) {
-	Ok.privateWS.WatchOrders(okex.INST_ANY, symbol)
+func (Ok *OKExchange) WatchOrders(symbol string, instType string) {
+	if okex.CheckInstType(instType) {
+		Ok.privateWS.WatchOrders(instType, symbol)
+	} else {
+		Ok.privateWS.WatchOrders(okex.INST_ANY, symbol)
+	}
+
 }
 
 func (Ok *OKExchange) WatchCreateOrder(symbol, rtype, side string, amount, price float64, tradeMode string) {

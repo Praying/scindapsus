@@ -14,7 +14,7 @@ func TestProcessEvent(t *testing.T) {
 			tickerData := bd.TickerData{}
 			engine.TickerChan <- tickerData
 			orderData := bd.OrderData{}
-			engine.OrderChan <- orderData
+			engine.OrdersChan <- orderData
 			tradeData := bd.TradeData{}
 			engine.TradeChan <- tradeData
 			positionData := bd.PositionData{}

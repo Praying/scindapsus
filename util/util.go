@@ -32,6 +32,10 @@ func RandStringBytesMaskImprSrc(n int) string {
 	return string(b)
 }
 
+func GenMsgUuid() string {
+	return RandStringBytesMaskImprSrc(32)
+}
+
 func GenerateClOrdId(timestamp int64, orderCount int64) string {
 	tt := time.Unix(timestamp, 0)
 	year, month, day := tt.Date()

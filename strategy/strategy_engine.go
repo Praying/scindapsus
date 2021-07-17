@@ -112,8 +112,10 @@ func (this *StrategyEngine) ProcessBarData(barData bd.BarData) {
 	log.Info("process bar data")
 }
 
-func (this *StrategyEngine) ProcessOrderData(orderData bd.OrderData) {
-	log.Info("process order data")
+func (this *StrategyEngine) ProcessOrdersData(orderData bd.OrderData) {
+	for _, strategy := range this.SymbolStrategyMap[orderData.Symbol] {
+		strategy.OnOrders(orderData)
+	}
 }
 
 func (this *StrategyEngine) ProcessTradeData(tradeData bd.TradeData) {

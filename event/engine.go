@@ -13,7 +13,7 @@ type EventType int32
 const (
 	//行情
 	Event_TICKER EventType = iota
-	Event_ORDER
+	Event_ORDERS
 	Event_TRADE
 	Event_BAR
 	Event_POSITION
@@ -39,7 +39,7 @@ var Event2String map[EventType]string
 func init() {
 	Event2String = make(map[EventType]string)
 	Event2String[Event_TICKER] = "event_ticker"
-	Event2String[Event_ORDER] = "event_order"
+	Event2String[Event_ORDERS] = "event_order"
 	Event2String[Event_TRADE] = "event_trade"
 	Event2String[Event_BAR] = "event_bar"
 	Event2String[Event_POSITION] = "event_position"
@@ -50,7 +50,7 @@ func init() {
 type EventEngine struct {
 	EventBus      evbus.Bus
 	TickerChan    chan bd.TickerData
-	OrderChan     chan bd.OrderData
+	OrdersChan    chan bd.OrderData
 	TradeChan     chan bd.TradeData
 	PositionChan  chan bd.PositionData
 	BookChan      chan bd.BookData
@@ -60,7 +60,7 @@ type EventEngine struct {
 func NewEventEngine() *EventEngine {
 	return &EventEngine{EventBus: evbus.New(),
 		TickerChan:    make(chan bd.TickerData, DEFUALT_CHANNEL_SIZE),
-		OrderChan:     make(chan bd.OrderData, DEFUALT_CHANNEL_SIZE),
+		OrdersChan:    make(chan bd.OrderData, DEFUALT_CHANNEL_SIZE),
 		TradeChan:     make(chan bd.TradeData, DEFUALT_CHANNEL_SIZE),
 		PositionChan:  make(chan bd.PositionData, DEFUALT_CHANNEL_SIZE),
 		BookChan:      make(chan bd.BookData, DEFUALT_CHANNEL_SIZE),
@@ -75,8 +75,8 @@ func (eventEngine *EventEngine) Init() {
 			select {
 			case tickerData := <-eventEngine.TickerChan:
 				eventEngine.EventBus.Publish(Event2String[Event_TICKER], tickerData)
-			case orderData := <-eventEngine.OrderChan:
-				eventEngine.EventBus.Publish(Event2String[Event_ORDER], orderData)
+			case orderData := <-eventEngine.OrdersChan:
+				eventEngine.EventBus.Publish(Event2String[Event_ORDERS], orderData)
 			case tradeData := <-eventEngine.TradeChan:
 				eventEngine.EventBus.Publish(Event2String[Event_TRADE], tradeData)
 			case positionData := <-eventEngine.PositionChan:

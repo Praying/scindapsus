@@ -29,6 +29,11 @@ func NewFutureArbitrage(SD_Symbols []string) *FutureArbitrage {
 	return &FutureArbitrage{SD_Symbols: SD_Symbols}
 }
 
+func (f *FutureArbitrage) OnOrders(orderData bd.OrderData) {
+	log.Infof("OnOrder: %+v", orderData)
+	log.Infof("Id:%s, status:%s", orderData.OrderID, orderData.Status)
+}
+
 func (f *FutureArbitrage) Symbol() string {
 	return ""
 }
@@ -56,10 +61,11 @@ func (f *FutureArbitrage) OnTicker(tickerData bd.TickerData) {
 		return
 	}
 	diff := math.Abs(spotPrice-swapPrice) / spotPrice
-	if diff > 0.05 {
+	log.Infof("spot:%f, swap:%f, diff:%f%%", spotPrice, swapPrice, diff*100)
+	if diff > 0.02 {
 		log.Infof("spot:%f, swap:%f, diff:%f%%", spotPrice, swapPrice, diff*100)
 		//现货做多
-		f.SD_Exchange.WatchCreateOrder(f.SD_Symbols[0], okex.OKEX_OT_IOC, bd.SIDE_BUY, 1, spotPrice, okex.TRADE_MODEL_CASH)
+		f.SD_Exchange.WatchCreateOrder(f.SD_Symbols[0], okex.OKEX_OT_LIMIT, bd.SIDE_BUY, 1, spotPrice, okex.TRADE_MODEL_CASH)
 		//永续做空
 		f.SD_Exchange.WatchCreateOrder(f.SD_Symbols[1], okex.OKEX_OT_LIMIT, bd.SIDE_SELL, 1, swapPrice, okex.TRADE_MODEL_CROSS)
 
@@ -90,7 +96,7 @@ func (f *FutureArbitrage) Init(exchange exchanges.Exchange) {
 	for _, symbol := range f.SD_Symbols {
 		f.SD_Exchange.WatchTicker(symbol)
 		f.SD_Exchange.WatchPosition(symbol)
-		f.SD_Exchange.WatchOrders(symbol, "", "", nil)
+		f.SD_Exchange.WatchOrders(symbol, "")
 		//f.SD_Exchange.WatchTrades(symbol,"","",nil)
 	}
 	f.SD_IsInited = true

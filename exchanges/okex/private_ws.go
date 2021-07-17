@@ -14,7 +14,7 @@ type PrivateWSClient = OKExWSClient
 func (wsClient *PrivateWSClient) WatchCreateOrder(symbol, orderType, side string, amount, price float64, clOrdID, tradeMode string) error {
 	//Symbol-时间戳-OrderType
 	//orderId := generateOrderID(symbol, orderType)
-	orderId := fmt.Sprintf("%d", 1)
+	orderId := util.GenMsgUuid()
 	orderParam := &OrderParam{
 		ID:   orderId,
 		Op:   "order",
@@ -103,15 +103,6 @@ func (wsClient *PrivateWSClient) doBalAndPos(op string) error {
 }
 
 //订阅持仓
-/*
-	产品类型
-INST_MARGIN：币币杠杆
-SWAP：永续合约
-FUTURES：交割合约
-OPTION：期权
-ANY：全部
-*/
-
 func (wsClient *PrivateWSClient) WatchPosition(instType string, instID string) error {
 	return wsClient.doPosition(WS_SUBSCRIBE, instType, instID)
 }
@@ -120,6 +111,9 @@ func (wsClient *PrivateWSClient) UnWatchPosition(instType string, instID string)
 }
 
 func (wsClient *PrivateWSClient) doPosition(op string, instType string, instID string) error {
+	if !CheckInstType(instType) {
+		return fmt.Errorf("param instType: %s is not correct", instType)
+	}
 	var positionParam PositionParam
 	positionParam.Op = op
 	positionParam.Args = append(positionParam.Args, struct {
@@ -143,6 +137,9 @@ func (wsClient *PrivateWSClient) UnWatchOrders(instType string, symbol string) e
 }
 
 func (wsClient *PrivateWSClient) doOrders(op string, instType string, symbol string) error {
+	if !CheckInstType(instType) {
+		return fmt.Errorf("param instType: %s is not correct", instType)
+	}
 	var orderChParam OrderChParam
 	orderChParam.Op = op
 	orderChParam.Args = append(orderChParam.Args, struct {

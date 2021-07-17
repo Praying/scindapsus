@@ -81,8 +81,6 @@ func TestSendLimitOrder(t *testing.T) {
 	//登录
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
-	//订阅订单信息
-
 	//下单
 	if err := privateWS.WatchCreateOrder("ETH-USDT", OKEX_OT_LIMIT, bd.SIDE_BUY, 0.01, 2400, "dsfgrewd", TRADE_MODEL_CASH); err != nil {
 		log.Errorln(err.Error())
@@ -94,8 +92,6 @@ func TestSendLimitOrder(t *testing.T) {
 func TestSubscribeBalAndPos(t *testing.T) {
 	privateWS := NewPrivateWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
 	privateWS.ConnectWS()
-	//登录
-
 	privateWS.Login(apiConfig)
 	time.Sleep(5 * time.Second)
 
@@ -122,8 +118,6 @@ func TestSubscribeBalAndPos(t *testing.T) {
 func TestOKExWSClient_WatchOrders(t *testing.T) {
 	privateWS := NewPrivateWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
 	privateWS.ConnectWS()
-	//登录
-
 	privateWS.Login(apiConfig)
 	time.Sleep(2 * time.Second)
 	privateWS.WatchOrders(INST_SPOT, "ETH-USDT")
@@ -144,12 +138,10 @@ func TestOKExWSClient_WatchOrders(t *testing.T) {
 
 }
 
-//永续开空测试
-func TestFutureShort(t *testing.T) {
-	privateWS := NewPrivateWSClient(TEST_PRIVATE_WEBSOCKET_HOST, OkexRespHandler)
-	privateWS.ConnectWS()
-	//登录
-
-	privateWS.Login(apiConfig)
-	time.Sleep(2 * time.Second)
+func TestWatchRepeat(t *testing.T) {
+	publicWS := NewPublicWSClient(TEST_PUBLIC_WEBSOCKET_HOST, OkexRespHandler)
+	publicWS.ConnectWS()
+	publicWS.WatchTicker([]string{"ETH-USDT"})
+	publicWS.WatchTicker([]string{"ETH-USD-SWAP"})
+	time.Sleep(10 * time.Second)
 }

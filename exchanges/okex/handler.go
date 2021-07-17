@@ -32,12 +32,12 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 		return nil
 	case ORDER_CHANNEL:
 		//orderData := parseOrderData(data)
-		//event.GetEventEngine().OrderChan <- *orderData
+		//event.GetEventEngine().OrdersChan <- *orderData
 		return nil
 	case ORDERS_CHANNEL:
 		orderData, tradeData := parseOrdersInfo(data)
 		if orderData != nil {
-			event.GetEventEngine().OrderChan <- *orderData
+			event.GetEventEngine().OrdersChan <- *orderData
 		}
 		if tradeData != nil {
 			event.GetEventEngine().TradeChan <- *tradeData
@@ -65,12 +65,13 @@ func OkexRespHandler(channel string, data json.RawMessage) error {
 }
 
 func (wsClient *OKExWSClient) handle(msg []byte) error {
+	msgStr := string(msg)
 	//log.Info("[ws][response]", string(msg))
-	if string(msg) == "pong" {
+	if msgStr == "pong" {
 		return nil
 	}
 
-	if strings.Contains(string(msg), "event") {
+	if strings.Contains(msgStr, "event") {
 		//处理订阅事件的状态
 		var wsResp wsResp
 		err := json.Unmarshal(msg, &wsResp)
@@ -105,7 +106,7 @@ func (wsClient *OKExWSClient) handle(msg []byte) error {
 		}
 	}
 
-	if strings.Contains(string(msg), "arg") && strings.Contains(string(msg), "channel") {
+	if strings.Contains(msgStr, "arg") && strings.Contains(msgStr, "channel") {
 		//推送数据
 		var wsResp wsResp
 		err := json.Unmarshal(msg, &wsResp)
@@ -114,6 +115,20 @@ func (wsClient *OKExWSClient) handle(msg []byte) error {
 			return err
 		}
 		return wsClient.respHandler(wsResp.Arg.Channel, msg)
+	}
+	//处理订单操作
+	if strings.Contains(msgStr, "op") && strings.Contains(msgStr, "order") {
+		var orderResp OrderResp
+		if err := json.Unmarshal(msg, &orderResp); err != nil {
+			log.Errorf("[handle] failed to  unmarshal order response")
+			return nil
+		}
+		if orderResp.Code == "0" {
+			//下单成功
+		} else {
+			//下单失败，属于正常信息
+			log.Infof("order failed, %+v", orderResp)
+		}
 	}
 
 	return nil

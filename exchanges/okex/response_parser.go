@@ -175,11 +175,13 @@ func parseBalAndPosData(data []byte) *bd.BalAndPosData {
            self.gateway.on_trade(trade)
 */
 func parseOrdersInfo(data []byte) (*bd.OrderData, *bd.TradeData) {
+
 	var ordersInfo OrdersInfo
 	if err := json.Unmarshal(data, &ordersInfo); err != nil {
 		log.Errorf("error: %s, Unmarshal data: %s to BalAndPostionResp", err.Error(), data)
 		return nil, nil
 	}
+	log.Infof("OrdersInfo: %+v", ordersInfo)
 	for _, item := range ordersInfo.Data {
 		//检查是否哟成交
 		orderId := item.ClOrdID
